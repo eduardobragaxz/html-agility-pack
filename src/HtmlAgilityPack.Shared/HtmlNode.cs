@@ -6,6 +6,7 @@
 // Copyright © ZZZ Projects Inc. All rights reserved.
 
 using System.Collections;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
 using System.Xml;
@@ -1193,7 +1194,7 @@ public partial class HtmlNode
     /// Gets all Descendant nodes in enumerated list
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<HtmlNode> Descendants()
+    public ImmutableArray<HtmlNode> Descendants()
     {
         // DO NOT REMOVE, the empty method is required for Fizzler third party library
         return Descendants(0);
@@ -1203,22 +1204,26 @@ public partial class HtmlNode
     /// Gets all Descendant nodes in enumerated list
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<HtmlNode> Descendants(int level)
+    public ImmutableArray<HtmlNode> Descendants(int level)
     {
+        ImmutableArray<HtmlNode>.Builder builder = ImmutableArray.CreateBuilder<HtmlNode>();
+
         if (level > HtmlDocument.MaxDepthLevel)
         {
             throw new ArgumentException(HtmlNode.DepthLevelExceptionMessage);
         }
 
-        foreach (HtmlNode? node in ChildNodes)
+        foreach (HtmlNode node in ChildNodes)
         {
-            yield return node!;
+            builder.Add(node);
 
-            foreach (HtmlNode? descendant in node?.Descendants(level + 1)!)
+            foreach (HtmlNode descendant in node.Descendants(level + 1)!)
             {
-                yield return descendant;
+                builder.Add(descendant);
             }
         }
+
+        return builder.ToImmutable();
     }
 
     /// <summary>

@@ -18,12 +18,12 @@ namespace HtmlAgilityPack;
 /// Initialize the HtmlNodeCollection with the base parent node
 /// </remarks>
 /// <param name="parentnode">The base node of the collection</param>
-public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
+public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
 {
     #region Fields
 
     private readonly HtmlNode? _parentnode = parentnode;
-    private readonly List<HtmlNode?> _items = [];
+    private readonly List<HtmlNode> _items = [];
 
     #endregion
     #region Constructors
@@ -97,7 +97,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// <summary>
     /// Gets the node at the specified index.
     /// </summary>
-    public HtmlNode? this[int index]
+    public HtmlNode this[int index]
     {
         get { return _items[index]; }
         set { _items[index] = value; }
@@ -107,7 +107,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// Add node to the collection
     /// </summary>
     /// <param name="node"></param>
-    public void Add(HtmlNode? node)
+    public void Add(HtmlNode node)
     {
         Add(node, true);
     }
@@ -117,7 +117,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// </summary>
     /// <param name="node"></param>
     /// <param name="setParent"></param>
-    public void Add(HtmlNode? node, bool setParent)
+    public void Add(HtmlNode node, bool setParent)
     {
         _items.Add(node);
 
@@ -147,7 +147,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// </summary>
     /// <param name="item"></param>
     /// <returns></returns>
-    public bool Contains(HtmlNode? item)
+    public bool Contains(HtmlNode item)
     {
         return _items.Contains(item);
     }
@@ -157,7 +157,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// </summary>
     /// <param name="array"></param>
     /// <param name="arrayIndex"></param>
-    public void CopyTo(HtmlNode?[] array, int arrayIndex)
+    public void CopyTo(HtmlNode[] array, int arrayIndex)
     {
         _items.CopyTo(array, arrayIndex);
     }
@@ -166,7 +166,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// Get Enumerator
     /// </summary>
     /// <returns></returns>
-    public List<HtmlNode?>.Enumerator GetEnumerator()
+    public List<HtmlNode>.Enumerator GetEnumerator()
     {
         return _items.GetEnumerator();
     }
@@ -175,7 +175,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// Get Enumerator
     /// </summary>
     /// <returns></returns>
-    IEnumerator<HtmlNode> IEnumerable<HtmlNode?>.GetEnumerator()
+    IEnumerator<HtmlNode> IEnumerable<HtmlNode>.GetEnumerator()
     {
         return _items.GetEnumerator();
     }
@@ -194,7 +194,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// </summary>
     /// <param name="item"></param>
     /// <returns></returns>
-    public int IndexOf(HtmlNode? item)
+    public int IndexOf(HtmlNode item)
     {
         return _items.IndexOf(item);
     }
@@ -204,7 +204,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// </summary>
     /// <param name="index"></param>
     /// <param name="node"></param>
-    public void Insert(int index, HtmlNode? node)
+    public void Insert(int index, HtmlNode node)
     {
         HtmlNode? next = null;
         HtmlNode? prev = null;
@@ -240,7 +240,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// </summary>
     /// <param name="item"></param>
     /// <returns></returns>
-    public bool Remove(HtmlNode? item)
+    public bool Remove(HtmlNode item)
     {
         int i = _items.IndexOf(item);
         RemoveAt(i);
@@ -255,7 +255,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     {
         HtmlNode? next = null;
         HtmlNode? prev = null;
-        HtmlNode? oldnode = _items[index];
+        HtmlNode oldnode = _items[index];
 
         // KEEP a reference since it will be set to null
         var parentNode = _parentnode ?? oldnode?._parentnode;
@@ -296,7 +296,7 @@ public class HtmlNodeCollection(HtmlNode? parentnode) : IList<HtmlNode?>
     /// <returns></returns>
     public static HtmlNode? FindFirst(HtmlNodeCollection items, string name)
     {
-        foreach (HtmlNode? node in items)
+        foreach (HtmlNode node in items)
         {
             if (node!.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                 return node;
