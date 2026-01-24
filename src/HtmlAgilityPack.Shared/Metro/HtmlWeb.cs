@@ -106,7 +106,7 @@ namespace HtmlAgilityPack
         public async Task<HtmlDocument> LoadFromWebAsync(Uri uri, Encoding encoding, NetworkCredential credentials)
         {
             var clientHandler = new HttpClientHandler();
-            if (credentials == null)
+            if (credentials is null)
                 clientHandler.UseDefaultCredentials = true;
             else
                 clientHandler.Credentials = credentials;
@@ -117,7 +117,7 @@ namespace HtmlAgilityPack
             if (e.StatusCode == HttpStatusCode.OK)
             {
                 var html = string.Empty;
-                if (encoding != null)
+                if (encoding is not null)
                 {
                     using (var sr = new StreamReader(await e.Content.ReadAsStreamAsync(), encoding))
                     {
@@ -128,7 +128,7 @@ namespace HtmlAgilityPack
                     html = await e.Content.ReadAsStringAsync();
 
                 var doc = new HtmlDocument();
-                if (PreHandleDocument != null)
+                if (PreHandleDocument is not null)
                     PreHandleDocument(doc);
                 doc.LoadHtml(html);
                 return doc;

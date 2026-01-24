@@ -6,22 +6,21 @@
 // Copyright © ZZZ Projects Inc. All rights reserved.
 
 #if !METRO
-namespace HtmlAgilityPack
+namespace HtmlAgilityPack;
+
+/// <summary>
+/// Represents the type of fragment in a mixed code document.
+/// </summary>
+public enum MixedCodeDocumentFragmentType
 {
     /// <summary>
-    /// Represents the type of fragment in a mixed code document.
+    /// The fragment contains code.
     /// </summary>
-    public enum MixedCodeDocumentFragmentType
-    {
-        /// <summary>
-        /// The fragment contains code.
-        /// </summary>
-        Code,
+    Code,
 
-        /// <summary>
-        /// The fragment contains text.
-        /// </summary>
-        Text,
-    }
+    /// <summary>
+    /// The fragment contains text.
+    /// </summary>
+    Text,
 }
 #endif

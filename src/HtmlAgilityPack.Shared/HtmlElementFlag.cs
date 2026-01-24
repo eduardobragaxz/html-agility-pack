@@ -5,34 +5,31 @@
 // More projects: https://zzzprojects.com/
 // Copyright © ZZZ Projects Inc. All rights reserved.
 
-using System;
+namespace HtmlAgilityPack;
 
-namespace HtmlAgilityPack
+/// <summary>
+/// Flags that describe the behavior of an Element node.
+/// </summary>
+[Flags]
+public enum HtmlElementFlag
 {
     /// <summary>
-    /// Flags that describe the behavior of an Element node.
+    /// The node is a CDATA node.
     /// </summary>
-    [Flags]
-    public enum HtmlElementFlag
-    {
-        /// <summary>
-        /// The node is a CDATA node.
-        /// </summary>
-        CData = 1,
+    CData = 1,
 
-        /// <summary>
-        /// The node is empty. META or IMG are example of such nodes.
-        /// </summary>
-        Empty = 2,
+    /// <summary>
+    /// The node is empty. META or IMG are example of such nodes.
+    /// </summary>
+    Empty = 2,
 
-        /// <summary>
-        /// The node will automatically be closed during parsing.
-        /// </summary>
-        Closed = 4,
+    /// <summary>
+    /// The node will automatically be closed during parsing.
+    /// </summary>
+    Closed = 4,
 
-        /// <summary>
-        /// The node can overlap.
-        /// </summary>
-        CanOverlap = 8
-    }
+    /// <summary>
+    /// The node can overlap.
+    /// </summary>
+    CanOverlap = 8
 }

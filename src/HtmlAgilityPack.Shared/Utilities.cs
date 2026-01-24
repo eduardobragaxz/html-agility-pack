@@ -5,66 +5,56 @@
 // More projects: https://zzzprojects.com/
 // Copyright © ZZZ Projects Inc. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace HtmlAgilityPack
+namespace HtmlAgilityPack;
+
+internal static class Utilities
 {
-    internal static class Utilities
+    public static TValue? GetDictionaryValueOrDefault<TKey, TValue>(Dictionary<TKey, TValue> dict, TKey key, TValue? defaultValue = default(TValue)) where TKey : class
     {
-        public static
-#if NET8_0
-        TValue?
-#else
-        TValue
-#endif
-        GetDictionaryValueOrDefault<TKey, TValue>(Dictionary<TKey, TValue> dict, TKey key, TValue defaultValue = default(TValue)) where TKey : class
-        {
-            TValue value;
-            if (!dict.TryGetValue(key, out value))
-                return defaultValue;
-            return value;
-        }
+        if (!dict.TryGetValue(key, out TValue? value))
+            return defaultValue;
+        return value;
+    }
 
 #if !(METRO || NETSTANDARD1_3 || NETSTANDARD1_6)
-        internal static object To(this Object @this, Type type)
+    internal static object? To(this Object @this, Type type)
+    {
+        if (@this is not null)
         {
-            if (@this != null)
+            Type targetType = type;
+
+            if (@this.GetType() == targetType)
             {
-                Type targetType = type;
+                return @this;
+            }
 
-                if (@this.GetType() == targetType)
+            TypeConverter converter = TypeDescriptor.GetConverterFromRegisteredType(@this);
+            if (converter is not null)
+            {
+                if (converter.CanConvertTo(targetType))
                 {
-                    return @this;
-                }
-
-                TypeConverter converter = TypeDescriptor.GetConverter(@this);
-                if (converter != null)
-                {
-                    if (converter.CanConvertTo(targetType))
-                    {
-                        return converter.ConvertTo(@this, targetType);
-                    }
-                }
-
-                converter = TypeDescriptor.GetConverter(targetType);
-                if (converter != null)
-                {
-                    if (converter.CanConvertFrom(@this.GetType()))
-                    {
-                        return converter.ConvertFrom(@this);
-                    }
-                }
-
-                if (@this == DBNull.Value)
-                {
-                    return null;
+                    return converter.ConvertTo(@this, targetType);
                 }
             }
 
-            return @this;
+            converter = TypeDescriptor.GetConverterFromRegisteredType(targetType);
+            if (converter is not null)
+            {
+                if (converter.CanConvertFrom(@this.GetType()))
+                {
+                    return converter.ConvertFrom(@this);
+                }
+            }
+
+            if (@this == DBNull.Value)
+            {
+                return null;
+            }
         }
-#endif
+
+        return @this;
     }
+#endif
 }

@@ -9,14 +9,13 @@ namespace HtmlAgilityPack
 {
     internal partial class Trace
     {
-        internal static Trace _current;
+        internal static Trace? _current;
 
         internal static Trace Current
         {
             get
             {
-                if (_current == null)
-                    _current = new Trace();
+                _current ??= new Trace();
                 return _current;
             }
         }

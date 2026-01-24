@@ -31,10 +31,7 @@ namespace HtmlAgilityPack
             {
                 if (value)
                 {
-                    if (HtmlNode.ElementsFlags.ContainsKey("p"))
-                    {
-                        HtmlNode.ElementsFlags.Remove("p");
-                    }
+                    HtmlNode.ElementsFlags.Remove("p");
                 }
                 else
                 {
@@ -49,10 +46,10 @@ namespace HtmlAgilityPack
         }
 
         /// <summary>Default builder to use in the HtmlDocument constructor</summary>
-        public static Action<HtmlDocument> DefaultBuilder { get; set; }
+        public static Action<HtmlDocument>? DefaultBuilder { get; set; }
 
         /// <summary>Action to execute before the Parse is executed</summary>
-        public Action<HtmlDocument> ParseExecuting { get; set; }
+        public Action<HtmlDocument>? ParseExecuting { get; set; }
 
         #endregion
 
@@ -64,30 +61,31 @@ namespace HtmlAgilityPack
         private static int _maxDepthLevel = int.MaxValue;
 
         private int _c;
-        private Crc32 _crc32;
-        private HtmlAttribute _currentattribute;
-        private HtmlNode _currentnode;
-        private Encoding _declaredencoding;
+        [Obsolete]
+        private Crc32? _crc32;
+        private HtmlAttribute? _currentattribute;
+        private HtmlNode? _currentnode;
+        private Encoding? _declaredencoding;
         private HtmlNode _documentnode;
         private bool _fullcomment;
-		private int _index;
-        internal Dictionary<string, HtmlNode> Lastnodes = new Dictionary<string, HtmlNode>();
-        private HtmlNode _lastparentnode;
+        private int _index;
+        internal Dictionary<string, HtmlNode> Lastnodes = [];
+        private HtmlNode? _lastparentnode;
         private int _line;
         private int _lineposition, _maxlineposition;
-        internal Dictionary<string, HtmlNode> Nodesid;
+        internal Dictionary<string, HtmlNode>? Nodesid;
         private ParseState _oldstate;
         private bool _onlyDetectEncoding;
-        internal Dictionary<int, HtmlNode> Openednodes;
-        private List<HtmlParseError> _parseerrors = new List<HtmlParseError>();
-        private string _remainder;
+        internal Dictionary<int, HtmlNode>? Openednodes;
+        private List<HtmlParseError> _parseerrors = [];
+        private string? _remainder;
         private int _remainderOffset;
         private ParseState _state;
-        private Encoding _streamencoding;
+        private Encoding? _streamencoding;
         private bool _useHtmlEncodingForStream;
 
         /// <summary>The HtmlDocument Text. Careful if you modify it.</summary>
-        public string Text;
+        public string? Text;
 
         /// <summary>True to stay backward compatible with previous version of HAP. This option does not guarantee 100% compatibility.</summary>
         public bool BackwardCompatibility = true;
@@ -163,10 +161,10 @@ namespace HtmlAgilityPack
         /// <summary>True to disable implicit end. An explicit end logic will be used instead.</summary>
 		public bool DisableImplicitEnd;
 
-		/// <summary>
-		/// If used together with <see cref="OptionOutputAsXml"/> and enabled, Xml namespaces in element names are preserved. Default is false.
-		/// </summary>
-		public bool OptionPreserveXmlNamespaces;
+        /// <summary>
+        /// If used together with <see cref="OptionOutputAsXml"/> and enabled, Xml namespaces in element names are preserved. Default is false.
+        /// </summary>
+        public bool OptionPreserveXmlNamespaces;
 
         /// <summary>
         /// Defines if attribute value output must be optimized (not bound with double quotes if it is possible). Default is false.
@@ -196,7 +194,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Defines the name of a node that will throw the StopperNodeException when found as an end node. Default is null.
         /// </summary>
-        public string OptionStopperNodeName;
+        public string? OptionStopperNodeName;
 
         /// <summary>
         /// Defines if attributes should use original names by default, rather than lower case. Default is false.
@@ -230,11 +228,11 @@ namespace HtmlAgilityPack
         public bool OptionEnableBreakLineForInnerText;
 
 
-		#endregion
+        #endregion
 
-		#region Static Members
+        #region Static Members
 
-		internal static readonly string HtmlExceptionRefNotChild = "Reference node must be a child of this node";
+        internal static readonly string HtmlExceptionRefNotChild = "Reference node must be a child of this node";
 
         internal static readonly string HtmlExceptionUseIdAttributeFalse = "You need to set UseIdAttribute property to true to enable this feature";
 
@@ -242,7 +240,7 @@ namespace HtmlAgilityPack
 
         internal static readonly string HtmlExceptionClassExists = "Class name already exists";
 
-        internal static readonly Dictionary<string, string[]> HtmlResetters = new Dictionary<string, string[]>()
+        internal static readonly Dictionary<string, string[]> HtmlResetters = new()
         {
             {"li", new[] {"ul", "ol"}},
             {"tr", new[] {"table"}},
@@ -259,10 +257,7 @@ namespace HtmlAgilityPack
         /// </summary>
         public HtmlDocument()
         {
-            if (DefaultBuilder != null)
-            {
-                DefaultBuilder(this);
-            }
+            DefaultBuilder?.Invoke(this);
 
             _documentnode = CreateNode(HtmlNodeType.Document, 0);
 #if SILVERLIGHT || METRO || NETSTANDARD1_3 || NETSTANDARD1_6
@@ -278,7 +273,7 @@ namespace HtmlAgilityPack
 
         /// <summary>Gets the parsed text.</summary>
         /// <value>The parsed text.</value>
-        public string ParsedText
+        public string? ParsedText
         {
             get { return Text; }
         }
@@ -298,14 +293,16 @@ namespace HtmlAgilityPack
         /// </summary>
         public int CheckSum
         {
-            get { return _crc32 == null ? 0 : (int) _crc32.CheckSum; }
+#pragma warning disable CS0612 // Type or member is obsolete
+            get { return _crc32 is null ? 0 : (int)_crc32.CheckSum; }
+#pragma warning restore CS0612 // Type or member is obsolete
         }
 
         /// <summary>
         /// Gets the document's declared encoding.
         /// Declared encoding is determined using the meta http-equiv="content-type" content="text/html;charset=XXXXX" html node (pre-HTML5) or the meta charset="XXXXX" html node (HTML5).
         /// </summary>
-        public Encoding DeclaredEncoding
+        public Encoding? DeclaredEncoding
         {
             get { return _declaredencoding; }
         }
@@ -338,7 +335,7 @@ namespace HtmlAgilityPack
         /// Gets the remaining text.
         /// Will always be null if OptionStopperNodeName is null.
         /// </summary>
-        public string Remainder
+        public string? Remainder
         {
             get { return _remainder; }
         }
@@ -355,7 +352,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets the document's stream encoding.
         /// </summary>
-        public Encoding StreamEncoding
+        public Encoding? StreamEncoding
         {
             get { return _streamencoding; }
         }
@@ -375,18 +372,28 @@ namespace HtmlAgilityPack
         }
 
 #if !METRO
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tagName"></param>
 		public void UseAttributeOriginalName(string tagName)
-	    {
-		    foreach (var nod in this.DocumentNode.SelectNodes("//" + tagName))
-		    {
-			    foreach (var attribut in nod.Attributes)
-			    {
-				    attribut.UseOriginalName = true;
-			    }
-		    }
-		}
+        {
+            foreach (var nod in this.DocumentNode.SelectNodes("//" + tagName)!)
+            {
+                foreach (var attribut in nod?.Attributes!)
+                {
+                    attribut.UseOriginalName = true;
+                }
+            }
+        }
 #endif
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="isAttribute"></param>
+        /// <param name="preserveXmlNamespaces"></param>
+        /// <returns></returns>
 		public static string GetXmlName(string name, bool isAttribute, bool preserveXmlNamespaces)
         {
             string xmlname = string.Empty;
@@ -407,7 +414,7 @@ namespace HtmlAgilityPack
                 else
                 {
                     nameisok = false;
-                    byte[] bytes = Encoding.UTF8.GetBytes(new char[] {name[i]});
+                    byte[] bytes = Encoding.UTF8.GetBytes([name[i]]);
                     for (int j = 0; j < bytes.Length; j++)
                     {
                         xmlname += bytes[j].ToString("x2");
@@ -435,16 +442,13 @@ namespace HtmlAgilityPack
             return HtmlEncodeWithCompatibility(html, true);
         }
 
-        internal static string HtmlEncodeWithCompatibility(string html, bool backwardCompatibility = true)
+        internal static string HtmlEncodeWithCompatibility(string? html, bool backwardCompatibility = true)
         {
-            if (html == null)
-            {
-                throw new ArgumentNullException("html");
-            }
+            ArgumentNullException.ThrowIfNull(html);
 
             // replace & by &amp; but only once!
 
-            Regex rx = backwardCompatibility ? new Regex("&(?!(amp;)|(lt;)|(gt;)|(quot;))", RegexOptions.IgnoreCase) : new Regex("&(?!(amp;)|(lt;)|(gt;)|(quot;)|(nbsp;)|(reg;))", RegexOptions.IgnoreCase);
+            Regex rx = backwardCompatibility ? BackwardCompatibilityRegex() : NotBackwardsCompatibilityRegex();
             return rx.Replace(html, "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
         }
 
@@ -470,8 +474,7 @@ namespace HtmlAgilityPack
         /// <returns>The new HTML attribute.</returns>
         public HtmlAttribute CreateAttribute(string name)
         {
-            if (name == null)
-                throw new ArgumentNullException("name");
+            ArgumentNullException.ThrowIfNull(name);
 
             HtmlAttribute att = CreateAttribute();
             att.Name = name;
@@ -484,12 +487,9 @@ namespace HtmlAgilityPack
         /// <param name="name">The name of the attribute. May not be null.</param>
         /// <param name="value">The value of the attribute.</param>
         /// <returns>The new HTML attribute.</returns>
-        public HtmlAttribute CreateAttribute(string name, string value)
+        public HtmlAttribute CreateAttribute(string name, string? value)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
+            ArgumentNullException.ThrowIfNull(name);
 
             HtmlAttribute att = CreateAttribute(name);
             att.Value = value;
@@ -502,7 +502,7 @@ namespace HtmlAgilityPack
         /// <returns>The new HTML comment node.</returns>
         public HtmlCommentNode CreateComment()
         {
-            return (HtmlCommentNode) CreateNode(HtmlNodeType.Comment);
+            return (HtmlCommentNode)CreateNode(HtmlNodeType.Comment);
         }
 
         /// <summary>
@@ -512,10 +512,7 @@ namespace HtmlAgilityPack
         /// <returns>The new HTML comment node.</returns>
         public HtmlCommentNode CreateComment(string comment)
         {
-            if (comment == null)
-            {
-                throw new ArgumentNullException("comment");
-            }
+            ArgumentNullException.ThrowIfNull(comment);
 
             if (!comment.StartsWith("<!--") && !comment.EndsWith("-->"))
             {
@@ -534,10 +531,7 @@ namespace HtmlAgilityPack
         /// <returns>The new HTML node.</returns>
         public HtmlNode CreateElement(string name)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name");
-            }
+            ArgumentNullException.ThrowIfNull(name);
 
             HtmlNode node = CreateNode(HtmlNodeType.Element);
             node.SetName(name);
@@ -550,7 +544,7 @@ namespace HtmlAgilityPack
         /// <returns>The new HTML text node.</returns>
         public HtmlTextNode CreateTextNode()
         {
-            return (HtmlTextNode) CreateNode(HtmlNodeType.Text);
+            return (HtmlTextNode)CreateNode(HtmlNodeType.Text);
         }
 
         /// <summary>
@@ -560,10 +554,7 @@ namespace HtmlAgilityPack
         /// <returns>The new HTML text node.</returns>
         public HtmlTextNode CreateTextNode(string text)
         {
-            if (text == null)
-            {
-                throw new ArgumentNullException("text");
-            }
+            ArgumentNullException.ThrowIfNull(text);
 
             HtmlTextNode t = CreateTextNode();
             t.Text = text;
@@ -575,7 +566,7 @@ namespace HtmlAgilityPack
         /// </summary>
         /// <param name="stream">The input stream. May not be null.</param>
         /// <returns>The detected encoding.</returns>
-        public Encoding DetectEncoding(Stream stream)
+        public Encoding? DetectEncoding(Stream stream)
         {
             return DetectEncoding(stream, false);
         }
@@ -586,14 +577,11 @@ namespace HtmlAgilityPack
         /// <param name="stream">The input stream. May not be null.</param>
         /// <param name="checkHtml">The html is checked.</param>
         /// <returns>The detected encoding.</returns>
-        public Encoding DetectEncoding(Stream stream, bool checkHtml)
+        public Encoding? DetectEncoding(Stream stream, bool checkHtml)
         {
             _useHtmlEncodingForStream = checkHtml;
 
-            if (stream == null)
-            {
-                throw new ArgumentNullException("stream");
-            }
+            ArgumentNullException.ThrowIfNull(stream);
 
             return DetectEncoding(new StreamReader(stream));
         }
@@ -604,17 +592,14 @@ namespace HtmlAgilityPack
         /// </summary>
         /// <param name="reader">The TextReader used to feed the HTML. May not be null.</param>
         /// <returns>The detected encoding.</returns>
-        public Encoding DetectEncoding(TextReader reader)
+        public Encoding? DetectEncoding(TextReader reader)
         {
-            if (reader == null)
-            {
-                throw new ArgumentNullException("reader");
-            }
+            ArgumentNullException.ThrowIfNull(reader);
 
             _onlyDetectEncoding = true;
             if (OptionCheckSyntax)
             {
-                Openednodes = new Dictionary<int, HtmlNode>();
+                Openednodes = [];
             }
             else
             {
@@ -630,8 +615,7 @@ namespace HtmlAgilityPack
                 Nodesid = null;
             }
 
-            StreamReader sr = reader as StreamReader;
-            if (sr != null && !_useHtmlEncodingForStream)
+            if (reader is StreamReader sr && !_useHtmlEncodingForStream)
             {
                 Text = sr.ReadToEnd();
                 _streamencoding = sr.CurrentEncoding;
@@ -657,24 +641,19 @@ namespace HtmlAgilityPack
             return _streamencoding;
         }
 
-     
+
         /// <summary>
         /// Detects the encoding of an HTML text.
         /// </summary>
         /// <param name="html">The input html text. May not be null.</param>
         /// <returns>The detected encoding.</returns>
-        public Encoding DetectEncodingHtml(string html)
+        public Encoding? DetectEncodingHtml(string html)
         {
-            if (html == null)
-            {
-                throw new ArgumentNullException("html");
-            }
+            ArgumentNullException.ThrowIfNull(html);
 
-            using (StringReader sr = new StringReader(html))
-            {
-                Encoding encoding = DetectEncoding(sr);
-                return encoding;
-            }
+            using StringReader sr = new(html);
+            Encoding? encoding = DetectEncoding(sr);
+            return encoding;
         }
 
         /// <summary>
@@ -682,19 +661,16 @@ namespace HtmlAgilityPack
         /// </summary>
         /// <param name="id">The attribute id to match. May not be null.</param>
         /// <returns>The HTML node with the matching id or null if not found.</returns>
-        public HtmlNode GetElementbyId(string id)
+        public HtmlNode? GetElementbyId(string id)
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException("id");
-            }
+            ArgumentNullException.ThrowIfNull(id);
 
-            if (Nodesid == null)
+            if (Nodesid is null)
             {
                 throw new Exception(HtmlExceptionUseIdAttributeFalse);
             }
 
-            return Nodesid.TryGetValue(id, out HtmlNode value)
+            return Nodesid.TryGetValue(id, out HtmlNode? value)
                 ? value
                 : null;
         }
@@ -759,13 +735,12 @@ namespace HtmlAgilityPack
         public void Load(TextReader reader)
         {
             // all Load methods pass down to this one
-            if (reader == null)
-                throw new ArgumentNullException("reader");
+            ArgumentNullException.ThrowIfNull(reader);
 
             _onlyDetectEncoding = false;
 
             if (OptionCheckSyntax)
-                Openednodes = new Dictionary<int, HtmlNode>();
+                Openednodes = [];
             else
                 Openednodes = null;
 
@@ -778,8 +753,7 @@ namespace HtmlAgilityPack
                 Nodesid = null;
             }
 
-            StreamReader sr = reader as StreamReader;
-            if (sr != null)
+            if (reader is StreamReader sr)
             {
                 try
                 {
@@ -788,7 +762,7 @@ namespace HtmlAgilityPack
                 }
                 // ReSharper disable EmptyGeneralCatchClause
                 catch (Exception)
-                    // ReSharper restore EmptyGeneralCatchClause
+                // ReSharper restore EmptyGeneralCatchClause
                 {
                     // void on purpose
                 }
@@ -806,7 +780,7 @@ namespace HtmlAgilityPack
             _documentnode = CreateNode(HtmlNodeType.Document, 0);
             Parse();
 
-            if (!OptionCheckSyntax || Openednodes == null) return;
+            if (!OptionCheckSyntax || Openednodes is null) return;
             foreach (HtmlNode node in Openednodes.Values)
             {
                 if (!node._starttag) // already reported
@@ -814,13 +788,13 @@ namespace HtmlAgilityPack
                     continue;
                 }
 
-                string html;
+                string? html;
                 if (OptionExtractErrorSourceText)
                 {
                     html = node.OuterHtml;
-                    if (html.Length > OptionExtractErrorSourceTextMaxLength)
+                    if (html?.Length > OptionExtractErrorSourceTextMaxLength)
                     {
-                        html = html.Substring(0, OptionExtractErrorSourceTextMaxLength);
+                        html = html[..OptionExtractErrorSourceTextMaxLength];
                     }
                 }
                 else
@@ -843,17 +817,12 @@ namespace HtmlAgilityPack
         /// Loads the HTML document from the specified string.
         /// </summary>
         /// <param name="html">String containing the HTML document to load. May not be null.</param>
-        public void LoadHtml(string html)
+        public void LoadHtml(string? html)
         {
-            if (html == null)
-            {
-                throw new ArgumentNullException("html");
-            }
+            ArgumentNullException.ThrowIfNull(html);
 
-            using (StringReader sr = new StringReader(html))
-            {
-                Load(sr);
-            }
+            using StringReader sr = new(html);
+            Load(sr);
         }
 
         /// <summary>
@@ -862,7 +831,7 @@ namespace HtmlAgilityPack
         /// <param name="outStream">The stream to which you want to save.</param>
         public void Save(Stream outStream)
         {
-            StreamWriter sw = new StreamWriter(outStream, GetOutEncoding());
+            StreamWriter sw = new(outStream, GetOutEncoding());
             Save(sw);
         }
 
@@ -873,17 +842,11 @@ namespace HtmlAgilityPack
         /// <param name="encoding">The character encoding to use. May not be null.</param>
         public void Save(Stream outStream, Encoding encoding)
         {
-            if (outStream == null)
-            {
-                throw new ArgumentNullException("outStream");
-            }
+            ArgumentNullException.ThrowIfNull(outStream);
 
-            if (encoding == null)
-            {
-                throw new ArgumentNullException("encoding");
-            }
+            ArgumentNullException.ThrowIfNull(encoding);
 
-            StreamWriter sw = new StreamWriter(outStream, encoding);
+            StreamWriter sw = new(outStream, encoding);
             Save(sw);
         }
 
@@ -894,7 +857,7 @@ namespace HtmlAgilityPack
         /// <param name="writer">The StreamWriter to which you want to save.</param>
         public void Save(StreamWriter writer)
         {
-            Save((TextWriter) writer);
+            Save((TextWriter)writer);
         }
 
         /// <summary>
@@ -903,10 +866,7 @@ namespace HtmlAgilityPack
         /// <param name="writer">The TextWriter to which you want to save. May not be null.</param>
         public void Save(TextWriter writer)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException("writer");
-            }
+            ArgumentNullException.ThrowIfNull(writer);
 
             DocumentNode.WriteTo(writer);
             writer.Flush();
@@ -938,17 +898,12 @@ namespace HtmlAgilityPack
 
         internal HtmlNode CreateNode(HtmlNodeType type, int index)
         {
-            switch (type)
+            return type switch
             {
-                case HtmlNodeType.Comment:
-                    return new HtmlCommentNode(this, index);
-
-                case HtmlNodeType.Text:
-                    return new HtmlTextNode(this, index);
-
-                default:
-                    return new HtmlNode(type, this, index);
-            }
+                HtmlNodeType.Comment => new HtmlCommentNode(this, index),
+                HtmlNodeType.Text => new HtmlTextNode(this, index),
+                _ => new HtmlNode(type, this, index),
+            };
         }
 
         internal Encoding GetOutEncoding()
@@ -957,27 +912,27 @@ namespace HtmlAgilityPack
             return _declaredencoding ?? (_streamencoding ?? OptionDefaultStreamEncoding);
         }
 
-        internal HtmlNode GetXmlDeclaration()
+        internal HtmlNode? GetXmlDeclaration()
         {
             if (!_documentnode.HasChildNodes)
                 return null;
 
-            foreach (HtmlNode node in _documentnode._childnodes)
+            foreach (HtmlNode? node in _documentnode._childnodes!)
                 if (node.Name == "?xml") // it's ok, names are case sensitive
                     return node;
 
             return null;
         }
 
-        internal void SetIdForNode(HtmlNode node, string id)
+        internal void SetIdForNode(HtmlNode? node, string? id)
         {
             if (!OptionUseIdAttribute)
                 return;
 
-            if ((Nodesid == null) || (id == null))
+            if ((Nodesid is null) || (id is null))
                 return;
 
-            if (node == null)
+            if (node is null)
                 Nodesid.Remove(id);
             else
                 Nodesid[id] = node;
@@ -987,35 +942,34 @@ namespace HtmlAgilityPack
         {
             do
             {
-                if (_lastparentnode.Closed)
+                if (_lastparentnode!.Closed)
                     _lastparentnode = _lastparentnode.ParentNode;
-            } while ((_lastparentnode != null) && (_lastparentnode.Closed));
+            } while ((_lastparentnode is not null) && (_lastparentnode.Closed));
 
-            if (_lastparentnode == null)
-                _lastparentnode = _documentnode;
+            _lastparentnode ??= _documentnode;
         }
 
         #endregion
 
         #region Private Methods
 
-        private void AddError(HtmlParseErrorCode code, int line, int linePosition, int streamPosition, string sourceText, string reason)
+        private void AddError(HtmlParseErrorCode code, int line, int linePosition, int streamPosition, string? sourceText, string reason)
         {
-            HtmlParseError err = new HtmlParseError(code, line, linePosition, streamPosition, sourceText, reason);
+            HtmlParseError err = new(code, line, linePosition, streamPosition, sourceText, reason);
             _parseerrors.Add(err);
             return;
         }
 
         private void CloseCurrentNode()
         {
-            if (_currentnode.Closed) // text or document are by def closed
+            if (_currentnode!.Closed) // text or document are by def closed
                 return;
 
             bool error = false;
-            HtmlNode prev = Utilities.GetDictionaryValueOrDefault(Lastnodes, _currentnode.Name);
+            HtmlNode? prev = Utilities.GetDictionaryValueOrDefault(Lastnodes, _currentnode.Name);
 
             // find last node of this kind
-            if (prev == null)
+            if (prev is null)
             {
                 if (HtmlNode.IsClosedElement(_currentnode.Name))
                 {
@@ -1023,14 +977,14 @@ namespace HtmlAgilityPack
                     _currentnode.CloseNode(_currentnode);
 
                     // add to parent node
-                    if (_lastparentnode != null)
+                    if (_lastparentnode is not null)
                     {
-                        HtmlNode foundNode = null;
-                        Stack<HtmlNode> futureChild = new Stack<HtmlNode>();
+                        HtmlNode? foundNode = null;
+                        Stack<HtmlNode> futureChild = new();
 
                         if (!_currentnode.Name.Equals("br"))
-						{
-                            for (HtmlNode node = _lastparentnode.LastChild; node != null; node = node.PreviousSibling)
+                        {
+                            for (HtmlNode? node = _lastparentnode.LastChild; node is not null; node = node.PreviousSibling)
                             {
                                 // br node never can contains other nodes.
                                 if ((node.Name == _currentnode.Name) && (!node.HasChildNodes))
@@ -1042,9 +996,9 @@ namespace HtmlAgilityPack
                                 futureChild.Push(node);
                             }
                         }
-                        
 
-                        if (foundNode != null)
+
+                        if (foundNode is not null)
                         {
                             while (futureChild.Count != 0)
                             {
@@ -1069,11 +1023,8 @@ namespace HtmlAgilityPack
                         // this is a hack: add it as a text node
                         HtmlNode closenode = CreateNode(HtmlNodeType.Text, _currentnode._outerstartindex);
                         closenode._outerlength = _currentnode._outerlength;
-                        ((HtmlTextNode) closenode).Text = ((HtmlTextNode) closenode).Text.ToLowerInvariant();
-                        if (_lastparentnode != null)
-                        {
-                            _lastparentnode.AppendChild(closenode);
-                        }
+                        ((HtmlTextNode)closenode).Text = ((HtmlTextNode)closenode).Text?.ToLowerInvariant();
+                        _lastparentnode?.AppendChild(closenode);
                     }
                     else
                     {
@@ -1115,7 +1066,7 @@ namespace HtmlAgilityPack
 
                 if (!error)
                 {
-                    Lastnodes[_currentnode.Name] = prev._prevwithsamename;
+                    Lastnodes[_currentnode.Name] = prev._prevwithsamename!;
                     prev.CloseNode(_currentnode);
                 }
             }
@@ -1124,7 +1075,7 @@ namespace HtmlAgilityPack
             // we close this node, get grandparent
             if (!error)
             {
-                if ((_lastparentnode != null) &&
+                if ((_lastparentnode is not null) &&
                     ((!HtmlNode.IsClosedElement(_currentnode.Name)) ||
                      (_currentnode._starttag)))
                 {
@@ -1133,9 +1084,9 @@ namespace HtmlAgilityPack
             }
         }
 
-        private string CurrentNodeName()
+        private string? CurrentNodeName()
         {
-            return Text.Substring(_currentnode._namestartindex, _currentnode._namelength);
+            return Text?.Substring(_currentnode!._namestartindex, _currentnode._namelength);
         }
 
 
@@ -1153,10 +1104,10 @@ namespace HtmlAgilityPack
             }
         }
 
-        private HtmlNode FindResetterNode(HtmlNode node, string name)
+        private HtmlNode? FindResetterNode(HtmlNode node, string name)
         {
-            HtmlNode resetter = Utilities.GetDictionaryValueOrDefault(Lastnodes, name);
-            if (resetter == null)
+            HtmlNode? resetter = Utilities.GetDictionaryValueOrDefault(Lastnodes, name);
+            if (resetter is null)
                 return null;
 
             if (resetter.Closed)
@@ -1170,37 +1121,37 @@ namespace HtmlAgilityPack
             return resetter;
         }
 
-        private bool FindResetterNodes(HtmlNode node, string[] names)
+        private bool FindResetterNodes(HtmlNode node, string[]? names)
         {
-            if (names == null)
+            if (names is null)
                 return false;
 
             for (int i = 0; i < names.Length; i++)
             {
-                if (FindResetterNode(node, names[i]) != null)
+                if (FindResetterNode(node, names[i]) is not null)
                     return true;
             }
 
             return false;
         }
 
-        private void FixNestedTag(string name, string[] resetters)
+        private void FixNestedTag(string? name, string[]? resetters)
         {
-            if (resetters == null)
+            if (resetters is null)
                 return;
 
-            HtmlNode prev = Utilities.GetDictionaryValueOrDefault(Lastnodes, _currentnode.Name);
+            HtmlNode? prev = Utilities.GetDictionaryValueOrDefault(Lastnodes, _currentnode!.Name);
             // if we find a previous unclosed same name node, without a resetter node between, we must close it
-            if (prev == null || (Lastnodes[name].Closed)) return;
+            if (prev is null || (Lastnodes[name!].Closed)) return;
             // try to find a resetter node, if found, we do nothing
-            if (FindResetterNodes(prev, resetters))
+            if (FindResetterNodes(prev, resetters!))
             {
                 return;
             }
 
             // ok we need to close the prev now
             // create a fake closer node
-            HtmlNode close = new HtmlNode(prev.NodeType, this, -1);
+            HtmlNode close = new(prev.NodeType, this, -1);
             close._endnode = close;
             prev.CloseNode(close);
         }
@@ -1208,18 +1159,17 @@ namespace HtmlAgilityPack
         private void FixNestedTags()
         {
             // we are only interested by start tags, not closing tags
-            if (!_currentnode._starttag)
+            if (!_currentnode!._starttag)
                 return;
 
-            string name = CurrentNodeName();
+            string? name = CurrentNodeName();
             FixNestedTag(name, GetResetters(name));
         }
 
-        private string[] GetResetters(string name)
+        private static string[]? GetResetters(string? name)
         {
-            string[] resetters;
 
-            if (!HtmlResetters.TryGetValue(name, out resetters))
+            if (!HtmlResetters.TryGetValue(name!, out string[]? resetters))
             {
                 return null;
             }
@@ -1229,11 +1179,10 @@ namespace HtmlAgilityPack
 
         private void IncrementPosition()
         {
-            if (_crc32 != null)
-            {
-                // REVIEW: should we add some checksum code in DecrementPosition too?
-                _crc32.AddToCRC32(_c);
-            }
+            // REVIEW: should we add some checksum code in DecrementPosition too?
+#pragma warning disable CS0612 // Type or member is obsolete
+            _crc32?.AddToCRC32(_c);
+#pragma warning restore CS0612 // Type or member is obsolete
 
             _index++;
             _maxlineposition = _lineposition;
@@ -1250,7 +1199,7 @@ namespace HtmlAgilityPack
 
         private bool IsValidTag()
         {
-            bool isValidTag = _c == '<' && _index < Text.Length && (Char.IsLetter(Text[_index]) || Text[_index] == '/' || Text[_index] == '?' || Text[_index] == '!' || Text[_index] == '%');
+            bool isValidTag = _c == '<' && _index < Text?.Length && (Char.IsLetter(Text[_index]) || Text[_index] == '/' || Text[_index] == '?' || Text[_index] == '!' || Text[_index] == '%');
             return isValidTag;
         }
 
@@ -1261,7 +1210,7 @@ namespace HtmlAgilityPack
                 return false;
             }
 
-            if (_index < Text.Length)
+            if (_index < Text?.Length)
             {
                 if (Text[_index] == '%')
                 {
@@ -1277,7 +1226,7 @@ namespace HtmlAgilityPack
                             break;
 
                         case ParseState.BetweenAttributes:
-                            PushAttributeNameStart(_index - 1, _lineposition -1);
+                            PushAttributeNameStart(_index - 1, _lineposition - 1);
                             break;
 
                         case ParseState.WhichTag:
@@ -1295,16 +1244,16 @@ namespace HtmlAgilityPack
             if (!PushNodeEnd(_index - 1, true))
             {
                 // stop parsing
-                _index = Text.Length;
+                _index = Text!.Length;
                 return true;
             }
 
             _state = ParseState.WhichTag;
-            if ((_index - 1) <= (Text.Length - 2))
+            if ((_index - 1) <= (Text!.Length - 2))
             {
-	            if (Text[_index] == '!' || Text[_index] == '?')
+                if (Text[_index] == '!' || Text[_index] == '?')
                 {
-                    if (OptionTreatCDataBlockAsComment && Text.Substring(_index).StartsWith("![CDATA[", StringComparison.OrdinalIgnoreCase))
+                    if (OptionTreatCDataBlockAsComment && Text[_index..].StartsWith("![CDATA[", StringComparison.OrdinalIgnoreCase))
                     {
                         PushNodeStart(HtmlNodeType.Comment, _index - 1, _lineposition - 1);
                         PushNodeNameStart(true, _index);
@@ -1335,38 +1284,39 @@ namespace HtmlAgilityPack
                         }
 
                         return true;
-                    }                   
+                    }
                 }
             }
 
-            PushNodeStart(HtmlNodeType.Element, _index - 1,  _lineposition - 1);
+            PushNodeStart(HtmlNodeType.Element, _index - 1, _lineposition - 1);
             return true;
         }
 
         private void Parse()
         {
-            if (ParseExecuting != null)
-            {
-                ParseExecuting(this);
-            }
+            ParseExecuting?.Invoke(this);
 
             int lastquote = 0;
             if (OptionComputeChecksum)
             {
+#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
                 _crc32 = new Crc32();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0612 // Type or member is obsolete
             }
 
-            Lastnodes = new Dictionary<string, HtmlNode>();
+            Lastnodes = [];
             _c = 0;
             _fullcomment = false;
-            _parseerrors = new List<HtmlParseError>();
+            _parseerrors = [];
             _line = 1;
             _lineposition = 0;
             _maxlineposition = 0;
 
             _state = ParseState.Text;
             _oldstate = _state;
-            _documentnode._innerlength = Text.Length;
+            _documentnode._innerlength = Text!.Length;
             _documentnode._outerlength = Text.Length;
             _remainderOffset = Text.Length;
 
@@ -1491,7 +1441,7 @@ namespace HtmlAgilityPack
                             continue;
                         }
 
-                        PushAttributeNameStart(_index - 1, _lineposition -1);
+                        PushAttributeNameStart(_index - 1, _lineposition - 1);
                         _state = ParseState.AttributeName;
                         break;
 
@@ -1706,8 +1656,8 @@ namespace HtmlAgilityPack
                         {
                             if (_fullcomment)
                             {
-	                            if (((Text[_index - 2] != '-') || (Text[_index - 3] != '-')) 
-                                    &&  
+                                if (((Text[_index - 2] != '-') || (Text[_index - 3] != '-'))
+                                    &&
                                     ((Text[_index - 2] != '!') || (Text[_index - 3] != '-') ||
                                      (Text[_index - 4] != '-')))
                                 {
@@ -1802,8 +1752,8 @@ namespace HtmlAgilityPack
                                 int c = Text[_index - 1 + 2 + _currentnode.Name.Length];
                                 if ((c == '>') || (IsWhiteSpace(c)))
                                 {
-									// add the script as a text node
-									HtmlNode script = CreateNode(HtmlNodeType.Text,
+                                    // add the script as a text node
+                                    HtmlNode script = CreateNode(HtmlNodeType.Text,
                                         _currentnode._outerstartindex +
                                         _currentnode._outerlength);
                                     script._outerlength = _index - 1 - script._outerstartindex;
@@ -1813,15 +1763,15 @@ namespace HtmlAgilityPack
 
                                     _currentnode.AppendChild(script);
 
-									// https://www.w3schools.com/jsref/prop_node_innertext.asp
-									// textContent returns the text content of all elements, while innerText returns the content of all elements, except for <script> and <style> elements.
-									// innerText will not return the text of elements that are hidden with CSS (textContent will). ==> The parser do not support that.
-									if (_currentnode.Name.Equals("script", StringComparison.OrdinalIgnoreCase)  || _currentnode.Name.Equals("style", StringComparison.OrdinalIgnoreCase))
+                                    // https://www.w3schools.com/jsref/prop_node_innertext.asp
+                                    // textContent returns the text content of all elements, while innerText returns the content of all elements, except for <script> and <style> elements.
+                                    // innerText will not return the text of elements that are hidden with CSS (textContent will). ==> The parser do not support that.
+                                    if (_currentnode.Name.Equals("script", StringComparison.OrdinalIgnoreCase) || _currentnode.Name.Equals("style", StringComparison.OrdinalIgnoreCase))
                                     {
-	                                    _currentnode._isHideInnerText = true;
-									}
+                                        _currentnode._isHideInnerText = true;
+                                    }
 
-									PushNodeStart(HtmlNodeType.Element, _index - 1, _lineposition -1);
+                                    PushNodeStart(HtmlNodeType.Element, _index - 1, _lineposition - 1);
                                     PushNodeNameStart(false, _index - 1 + 2);
                                     _state = ParseState.Tag;
                                     IncrementPosition();
@@ -1850,19 +1800,19 @@ namespace HtmlAgilityPack
 
         // In this moment, we don't have value. 
         // Potential: "\"", "'", "[", "]", "<", ">", "-", "|", "/", "\\"
-        private static List<string> BlockAttributes = new List<string>() { "\"", "'" };
+        private static readonly List<string> BlockAttributes = ["\"", "'"];
 
-	    private void PushAttributeNameEnd(int index)
-	    {
-		    _currentattribute._namelength = index - _currentattribute._namestartindex;
+        private void PushAttributeNameEnd(int index)
+        {
+            _currentattribute?._namelength = index - _currentattribute._namestartindex;
 
-		    if (_currentattribute.Name != null && !BlockAttributes.Contains(_currentattribute.Name))
-		    {
-			    _currentnode.Attributes.Append(_currentattribute);
-		    }
-	    }
+            if (_currentattribute?.Name is not null && !BlockAttributes.Contains(_currentattribute.Name))
+            {
+                _currentnode?.Attributes?.Append(_currentattribute);
+            }
+        }
 
-		private void PushAttributeNameStart(int index, int lineposition)
+        private void PushAttributeNameStart(int index, int lineposition)
         {
             _currentattribute = CreateAttribute();
             _currentattribute._namestartindex = index;
@@ -1874,7 +1824,7 @@ namespace HtmlAgilityPack
 
         private void PushAttributeValueEnd(int index)
         {
-            _currentattribute._valuelength = index - _currentattribute._valuestartindex;
+            _currentattribute?._valuelength = index - _currentattribute._valuestartindex;
         }
 
         private void PushAttributeValueStart(int index)
@@ -1886,7 +1836,7 @@ namespace HtmlAgilityPack
         {
             bool hasNodeToClose = true;
 
-            while(hasNodeToClose && !_lastparentnode.Closed)
+            while (hasNodeToClose && !_lastparentnode!.Closed)
             {
                 hasNodeToClose = false;
 
@@ -1896,7 +1846,7 @@ namespace HtmlAgilityPack
                 if (IsParentImplicitEnd())
                 {
                     if (OptionOutputAsXml || DisableImplicitEnd)
-					{
+                    {
                         forceExplicitEnd = true;
                     }
                     else
@@ -1912,17 +1862,17 @@ namespace HtmlAgilityPack
                     CloseParentExplicitEnd();
                     hasNodeToClose = true;
                 }
-            }           
+            }
         }
         private bool IsParentImplicitEnd()
         {
             // MUST be a start tag
-            if (!_currentnode._starttag) return false;
+            if (!_currentnode!._starttag) return false;
 
             bool isImplicitEnd = false;
 
-            var parent = _lastparentnode.Name;
-            var nodeName = Text.Substring(_currentnode._namestartindex, _index - _currentnode._namestartindex - 1).ToLowerInvariant();
+            var parent = _lastparentnode?.Name;
+            var nodeName = Text?.Substring(_currentnode._namestartindex, _index - _currentnode._namestartindex - 1).ToLowerInvariant();
 
             switch (parent)
             {
@@ -1973,7 +1923,7 @@ namespace HtmlAgilityPack
                     {
                         isImplicitEnd = nodeName == "p";
                     }
-                    
+
                     break;
                 case "option":
                     isImplicitEnd = nodeName == "option";
@@ -1986,12 +1936,12 @@ namespace HtmlAgilityPack
         private bool IsParentExplicitEnd()
         {
             // MUST be a start tag
-            if (!_currentnode._starttag) return false;
+            if (!_currentnode!._starttag) return false;
 
             bool isExplicitEnd = false;
 
-            var parent = _lastparentnode.Name;
-            var nodeName = Text.Substring(_currentnode._namestartindex, _index - _currentnode._namestartindex - 1).ToLowerInvariant();
+            var parent = _lastparentnode?.Name;
+            var nodeName = Text?.Substring(_currentnode._namestartindex, _index - _currentnode._namestartindex - 1).ToLowerInvariant();
 
             switch (parent)
             {
@@ -2000,7 +1950,7 @@ namespace HtmlAgilityPack
                     break;
                 case "p":
                     isExplicitEnd = nodeName == "div";
-					break;
+                    break;
                 case "table":
                     isExplicitEnd = nodeName == "table";
                     break;
@@ -2079,7 +2029,7 @@ namespace HtmlAgilityPack
 
         private void CloseParentImplicitEnd()
         {
-            HtmlNode close = new HtmlNode(_lastparentnode.NodeType, this, -1);
+            HtmlNode close = new(_lastparentnode!.NodeType, this, -1);
             close._endnode = close;
             close._isImplicitEnd = true;
             _lastparentnode._isImplicitEnd = true;
@@ -2088,61 +2038,55 @@ namespace HtmlAgilityPack
 
         private void CloseParentExplicitEnd()
         {
-            HtmlNode close = new HtmlNode(_lastparentnode.NodeType, this, -1);
+            HtmlNode close = new(_lastparentnode!.NodeType, this, -1);
             close._endnode = close;
             _lastparentnode.CloseNode(close);
         }
 
         private void PushAttributeValueStart(int index, int quote)
         {
-            _currentattribute._valuestartindex = index;
+            _currentattribute?._valuestartindex = index;
             if (quote == '\'')
             {
-                _currentattribute.InternalQuoteType = AttributeValueQuote.SingleQuote;
+                _currentattribute?.InternalQuoteType = AttributeValueQuote.SingleQuote;
             }
             if (quote == '"')
             {
-                _currentattribute.InternalQuoteType = AttributeValueQuote.DoubleQuote;
+                _currentattribute?.InternalQuoteType = AttributeValueQuote.DoubleQuote;
             }
 
             if (quote == 0)
             {
-                _currentattribute.InternalQuoteType = AttributeValueQuote.None;
+                _currentattribute?.InternalQuoteType = AttributeValueQuote.None;
             }
         }
 
         private bool PushNodeEnd(int index, bool close)
         {
-            _currentnode._outerlength = index - _currentnode._outerstartindex;
+            _currentnode?._outerlength = index - _currentnode._outerstartindex;
 
-            if ((_currentnode._nodetype == HtmlNodeType.Text) ||
-                (_currentnode._nodetype == HtmlNodeType.Comment))
+            if ((_currentnode?._nodetype == HtmlNodeType.Text) ||
+                (_currentnode?._nodetype == HtmlNodeType.Comment))
             {
                 // forget about void nodes
                 if (_currentnode._outerlength > 0)
                 {
                     _currentnode._innerlength = _currentnode._outerlength;
                     _currentnode._innerstartindex = _currentnode._outerstartindex;
-                    if (_lastparentnode != null)
-                    {
-                        _lastparentnode.AppendChild(_currentnode);
-                    }
+                    _lastparentnode?.AppendChild(_currentnode);
                 }
             }
             else
             {
-                if ((_currentnode._starttag) && (_lastparentnode != _currentnode))
+                if ((_currentnode!._starttag) && (_lastparentnode != _currentnode))
                 {
                     // add to parent node
-                    if (_lastparentnode != null)
-                    {
-                        _lastparentnode.AppendChild(_currentnode);
-                    }
+                    _lastparentnode?.AppendChild(_currentnode);
 
                     ReadDocumentEncoding(_currentnode);
 
                     // remember last node of this kind
-                    HtmlNode prev = Utilities.GetDictionaryValueOrDefault(Lastnodes, _currentnode.Name);
+                    HtmlNode? prev = Utilities.GetDictionaryValueOrDefault(Lastnodes, _currentnode.Name);
 
                     _currentnode._prevwithsamename = prev;
                     Lastnodes[_currentnode.Name] = _currentnode;
@@ -2170,11 +2114,11 @@ namespace HtmlAgilityPack
 
             if ((close) || (!_currentnode._starttag))
             {
-                if ((OptionStopperNodeName != null) && (_remainder == null) &&
+                if ((OptionStopperNodeName is not null) && (_remainder is null) &&
                     string.Equals(_currentnode.Name, OptionStopperNodeName, StringComparison.OrdinalIgnoreCase))
                 {
                     _remainderOffset = index;
-                    _remainder = Text.Substring(_remainderOffset);
+                    _remainder = Text?[_remainderOffset..];
                     CloseCurrentNode();
                     return false; // stop parsing
                 }
@@ -2187,7 +2131,7 @@ namespace HtmlAgilityPack
 
         private void PushNodeNameEnd(int index)
         {
-            _currentnode._namelength = index - _currentnode._namestartindex;
+            _currentnode?._namelength = index - _currentnode._namestartindex;
             if (OptionFixNestedTags)
             {
                 FixNestedTags();
@@ -2196,8 +2140,8 @@ namespace HtmlAgilityPack
 
         private void PushNodeNameStart(bool starttag, int index)
         {
-            _currentnode._starttag = starttag;
-            _currentnode._namestartindex = index;
+            _currentnode?._starttag = starttag;
+            _currentnode?._namestartindex = index;
         }
 
         private void PushNodeStart(HtmlNodeType type, int index, int lineposition)
@@ -2220,20 +2164,20 @@ namespace HtmlAgilityPack
                 return;
             if (node.Name != "meta") // all nodes names are lowercase
                 return;
-            string charset = null;
-            HtmlAttribute att = node.Attributes["http-equiv"];
-            if (att != null)
+            string? charset = null;
+            HtmlAttribute? att = node.Attributes?["http-equiv"];
+            if (att is not null)
             {
                 if (!string.Equals(att.Value, "content-type", StringComparison.OrdinalIgnoreCase))
                     return;
-                HtmlAttribute content = node.Attributes["content"];
-                if (content != null)
+                HtmlAttribute? content = node.Attributes?["content"];
+                if (content is not null)
                     charset = NameValuePairList.GetNameValuePairsValue(content.Value, "charset");
             }
             else
             {
-                att = node.Attributes["charset"];
-                if (att != null)
+                att = node?.Attributes?["charset"];
+                if (att is not null)
                     charset = att.Value;
             }
 
@@ -2251,24 +2195,24 @@ namespace HtmlAgilityPack
                     _declaredencoding = null;
                 }
 
-                if (_onlyDetectEncoding)
+                if (_onlyDetectEncoding && _declaredencoding is not null)
                 {
                     throw new EncodingFoundException(_declaredencoding);
                 }
 
-                if (_streamencoding != null)
+                if (_streamencoding is not null)
                 {
 #if SILVERLIGHT || PocketPC || METRO || NETSTANDARD1_3 || NETSTANDARD1_6
                     if (_declaredencoding.WebName != _streamencoding.WebName)
 #else
-                    if (_declaredencoding != null)
+                    if (_declaredencoding is not null)
                         if (_declaredencoding.CodePage != _streamencoding.CodePage)
 #endif
                         {
                             AddError(
                                 HtmlParseErrorCode.CharsetMismatch,
                                 _line, _lineposition,
-                                _index, node.OuterHtml,
+                                _index, node?.OuterHtml,
                                 "Encoding mismatch between StreamEncoding: " +
                                 _streamencoding.WebName + " and DeclaredEncoding: " +
                                 _declaredencoding.WebName);
@@ -2277,7 +2221,7 @@ namespace HtmlAgilityPack
             }
         }
 
-#endregion
+        #endregion
 
         #region Nested type: ParseState
 
@@ -2298,6 +2242,11 @@ namespace HtmlAgilityPack
             PcData,
             PcDataComment
         }
+
+        [GeneratedRegex("&(?!(amp;)|(lt;)|(gt;)|(quot;))", RegexOptions.IgnoreCase, "pt-BR")]
+        private static partial Regex BackwardCompatibilityRegex();
+        [GeneratedRegex("&(?!(amp;)|(lt;)|(gt;)|(quot;)|(nbsp;)|(reg;))", RegexOptions.IgnoreCase, "pt-BR")]
+        private static partial Regex NotBackwardsCompatibilityRegex();
 
         #endregion
     }

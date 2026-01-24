@@ -5,13 +5,12 @@
 // More projects: https://zzzprojects.com/
 // Copyright © ZZZ Projects Inc. All rights reserved.
 
-namespace HtmlAgilityPack
+namespace HtmlAgilityPack;
+
+partial class Trace
 {
-    partial class Trace
+    partial void WriteLineIntern(string message, string category)
     {
-        partial void WriteLineIntern(string message, string category)
-        {
-            System.Diagnostics.Debug.WriteLine(message, category);
-        }
+        System.Diagnostics.Debug.WriteLine(message, category);
     }
 }

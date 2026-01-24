@@ -14,12 +14,12 @@ namespace HtmlAgilityPack
     {
         #region Fields
 
-        private HtmlParseErrorCode _code;
-        private int _line;
-        private int _linePosition;
-        private string _reason;
-        private string _sourceText;
-        private int _streamPosition;
+        private readonly HtmlParseErrorCode _code;
+        private readonly int _line;
+        private readonly int _linePosition;
+        private readonly string _reason;
+        private readonly string? _sourceText;
+        private readonly int _streamPosition;
 
         #endregion
 
@@ -30,7 +30,7 @@ namespace HtmlAgilityPack
             int line,
             int linePosition,
             int streamPosition,
-            string sourceText,
+            string? sourceText,
             string reason)
         {
             _code = code;
@@ -80,7 +80,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets the the full text of the line containing the error.
         /// </summary>
-        public string SourceText
+        public string? SourceText
         {
             get { return _sourceText; }
         }

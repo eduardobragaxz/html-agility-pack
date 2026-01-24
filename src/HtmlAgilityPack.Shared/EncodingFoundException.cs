@@ -5,35 +5,33 @@
 // More projects: https://zzzprojects.com/
 // Copyright © ZZZ Projects Inc. All rights reserved.
 
-using System;
 using System.Text;
 
-namespace HtmlAgilityPack
+namespace HtmlAgilityPack;
+
+internal class EncodingFoundException : Exception
 {
-    internal class EncodingFoundException : Exception
+    #region Fields
+
+    private readonly Encoding _encoding;
+
+    #endregion
+
+    #region Constructors
+
+    internal EncodingFoundException(Encoding encoding)
     {
-        #region Fields
-
-        private Encoding _encoding;
-
-        #endregion
-
-        #region Constructors
-
-        internal EncodingFoundException(Encoding encoding)
-        {
-            _encoding = encoding;
-        }
-
-        #endregion
-
-        #region Properties
-
-        internal Encoding Encoding
-        {
-            get { return _encoding; }
-        }
-
-        #endregion
+        _encoding = encoding;
     }
+
+    #endregion
+
+    #region Properties
+
+    internal Encoding Encoding
+    {
+        get { return _encoding; }
+    }
+
+    #endregion
 }

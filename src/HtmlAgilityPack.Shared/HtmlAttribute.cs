@@ -26,16 +26,16 @@ namespace HtmlAgilityPack
 
         private int _line;
         internal int _lineposition;
-        internal string _name;
+        internal string? _name;
         internal int _namelength;
         internal int _namestartindex;
         internal HtmlDocument _ownerdocument; // attribute can exists without a node
-        internal HtmlNode _ownernode;
+        internal HtmlNode? _ownernode;
         private AttributeValueQuote? _quoteType;
         internal int _streamposition;
-        internal string _value;
+        internal string? _value;
         internal int _valuelength;
-        internal int _valuestartindex; 
+        internal int _valuestartindex;
         private bool? _localUseOriginalName;
 
         #endregion
@@ -92,11 +92,11 @@ namespace HtmlAgilityPack
             {
                 var useOriginalName = false;
                 if (this._localUseOriginalName.HasValue)
-				{
+                {
                     useOriginalName = this._localUseOriginalName.Value;
                 }
-                else if (this.OwnerDocument != null)
-				{
+                else if (this.OwnerDocument is not null)
+                {
                     useOriginalName = this.OwnerDocument.OptionDefaultUseOriginalName;
                 }
 
@@ -111,36 +111,27 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets the qualified name of the attribute.
         /// </summary>
-        public string Name
+        public string? Name
         {
             get
             {
-                if (_name == null)
-                {
-                    _name = _ownerdocument.Text.Substring(_namestartindex, _namelength);
-                }
+                _name ??= _ownerdocument?.Text?.Substring(_namestartindex, _namelength);
 
-	            return UseOriginalName ? _name : _name.ToLowerInvariant();
-			}
+                return UseOriginalName ? _name : _name?.ToLowerInvariant();
+            }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
+                ArgumentNullException.ThrowIfNull(value);
 
                 _name = value;
-                if (_ownernode != null)
-                {
-                    _ownernode.SetChanged();
-                }
+                _ownernode?.SetChanged();
             }
         }
 
         /// <summary>
         /// Name of attribute with original case
         /// </summary>
-        public string OriginalName
+        public string? OriginalName
         {
             get { return _name; }
         }
@@ -156,7 +147,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets the HTML node to which this attribute belongs.
         /// </summary>
-        public HtmlNode OwnerNode
+        public HtmlNode? OwnerNode
         {
             get { return _ownernode; }
         }
@@ -186,23 +177,23 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets or sets the value of the attribute.
         /// </summary>
-        public string Value
+        public string? Value
         {
             get
             {
                 // A null value has been provided, the attribute should be considered as "hidden"
-                if (_value == null && _ownerdocument.Text == null && _valuestartindex == 0 && _valuelength == 0)
+                if (_value is null && _ownerdocument.Text is null && _valuestartindex == 0 && _valuelength == 0)
                 {
                     return null;
                 }
 
-                if (_value == null)
+                if (_value is null)
                 {
-                    _value = _ownerdocument.Text.Substring(_valuestartindex, _valuelength);
+                    _value = _ownerdocument.Text?.Substring(_valuestartindex, _valuelength)!;
 
                     if (!_ownerdocument.BackwardCompatibility)
                     {
-                        _value = HtmlEntity.DeEntitize(_value);
+                        _value = HtmlEntity.DeEntitize(_value)!;
                     }
                 }
 
@@ -218,27 +209,24 @@ namespace HtmlAgilityPack
                         : AttributeValueQuote.DoubleQuote;
                 }
 
-                if (_ownernode != null)
-                {
-                    _ownernode.SetChanged();
-                }
+                _ownernode?.SetChanged();
             }
         }
 
         /// <summary>
         /// Gets the DeEntitized value of the attribute.
         /// </summary>
-        public string DeEntitizeValue
+        public string? DeEntitizeValue
         {
-            get { return HtmlEntity.DeEntitize(Value); }
+            get { return HtmlEntity.DeEntitize(Value!); }
         }
 
         internal string XmlName
         {
-            get { return HtmlDocument.GetXmlName(Name, true, OwnerDocument.OptionPreserveXmlNamespaces); }
+            get { return HtmlDocument.GetXmlName(Name!, true, OwnerDocument.OptionPreserveXmlNamespaces); }
         }
 
-        internal string XmlValue
+        internal string? XmlValue
         {
             get { return Value; }
         }
@@ -250,7 +238,7 @@ namespace HtmlAgilityPack
         {
             get
             {
-                string basePath = (OwnerNode == null) ? "/" : OwnerNode.XPath + "/";
+                string basePath = (OwnerNode is null) ? "/" : OwnerNode.XPath + "/";
                 return basePath + GetRelativeXpath();
             }
         }
@@ -264,15 +252,14 @@ namespace HtmlAgilityPack
         /// </summary>
         /// <param name="obj">An attribute to compare with this instance.</param>
         /// <returns>A 32-bit signed integer that indicates the relative order of the names comparison.</returns>
-        public int CompareTo(object obj)
+        public int CompareTo(object? obj)
         {
-            HtmlAttribute att = obj as HtmlAttribute;
-            if (att == null)
+            if (obj is not HtmlAttribute att)
             {
-                throw new ArgumentException("obj");
+                throw new ArgumentException(null, nameof(obj));
             }
 
-            return Name.CompareTo(att.Name);
+            return Name!.CompareTo(att.Name);
         }
 
         #endregion
@@ -285,11 +272,13 @@ namespace HtmlAgilityPack
         /// <returns>The cloned attribute.</returns>
         public HtmlAttribute Clone()
         {
-            HtmlAttribute att = new HtmlAttribute(_ownerdocument);
-            att.Name = OriginalName;
-            att.Value = Value;
-            att._quoteType = _quoteType;
-            att.InternalQuoteType = InternalQuoteType;
+            HtmlAttribute att = new(_ownerdocument)
+            {
+                Name = OriginalName,
+                Value = Value,
+                _quoteType = _quoteType,
+                InternalQuoteType = InternalQuoteType
+            };
 
             return att;
         }
@@ -299,20 +288,20 @@ namespace HtmlAgilityPack
         /// </summary>
         public void Remove()
         {
-            _ownernode.Attributes.Remove(this);
+            _ownernode?.Attributes?.Remove(this);
         }
 
         #endregion
 
         #region Private Methods
 
-        private string GetRelativeXpath()
+        private string? GetRelativeXpath()
         {
-            if (OwnerNode == null)
+            if (OwnerNode is null)
                 return Name;
 
             int i = 1;
-            foreach (HtmlAttribute node in OwnerNode.Attributes)
+            foreach (HtmlAttribute node in OwnerNode.Attributes!)
             {
                 if (node.Name != Name) continue;
 
