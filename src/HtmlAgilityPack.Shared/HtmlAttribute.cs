@@ -7,7 +7,6 @@
 
 #region
 
-using System;
 using System.Diagnostics;
 
 #endregion
@@ -24,7 +23,6 @@ namespace HtmlAgilityPack
     {
         #region Fields
 
-        private int _line;
         internal int _lineposition;
         internal string? _name;
         internal int _namelength;
@@ -54,35 +52,22 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets the line number of this attribute in the document.
         /// </summary>
-        public int Line
-        {
-            get { return _line; }
-            internal set { _line = value; }
-        }
+        public int Line { get; internal set; }
 
         /// <summary>
         /// Gets the column number of this attribute in the document.
         /// </summary>
-        public int LinePosition
-        {
-            get { return _lineposition; }
-        }
+        public int LinePosition => _lineposition;
 
         /// <summary>
         /// Gets the stream position of the value of this attribute in the document, relative to the start of the document.
         /// </summary>
-        public int ValueStartIndex
-        {
-            get { return _valuestartindex; }
-        }
+        public int ValueStartIndex => _valuestartindex;
 
         /// <summary>
         /// Gets the length of the value.
         /// </summary>
-        public int ValueLength
-        {
-            get { return _valuelength; }
-        }
+        public int ValueLength => _valuelength;
 
         /// <summary>Gets or sets a value indicating whether the attribute should use the original name.</summary>
         /// <value>True if the attribute should use the original name, false if not.</value>
@@ -90,22 +75,20 @@ namespace HtmlAgilityPack
         {
             get
             {
-                var useOriginalName = false;
-                if (this._localUseOriginalName.HasValue)
+                bool useOriginalName = false;
+                if (_localUseOriginalName.HasValue)
                 {
-                    useOriginalName = this._localUseOriginalName.Value;
+                    useOriginalName = _localUseOriginalName.Value;
                 }
-                else if (this.OwnerDocument is not null)
+                else if (OwnerDocument is not null)
                 {
-                    useOriginalName = this.OwnerDocument.OptionDefaultUseOriginalName;
+                    useOriginalName = OwnerDocument.OptionDefaultUseOriginalName;
                 }
 
                 return useOriginalName;
             }
-            set
-            {
-                this._localUseOriginalName = value;
-            }
+
+            set => _localUseOriginalName = value;
         }
 
         /// <summary>
@@ -131,34 +114,24 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Name of attribute with original case
         /// </summary>
-        public string? OriginalName
-        {
-            get { return _name; }
-        }
+        public string? OriginalName => _name;
 
         /// <summary>
         /// Gets the HTML document to which this attribute belongs.
         /// </summary>
-        public HtmlDocument OwnerDocument
-        {
-            get { return _ownerdocument; }
-        }
+        public HtmlDocument OwnerDocument => _ownerdocument;
 
         /// <summary>
         /// Gets the HTML node to which this attribute belongs.
         /// </summary>
-        public HtmlNode? OwnerNode
-        {
-            get { return _ownernode; }
-        }
+        public HtmlNode? OwnerNode => _ownernode;
 
         /// <summary>
         /// Specifies what type of quote the data should be wrapped in
         /// </summary>
         public AttributeValueQuote QuoteType
         {
-            get { return _quoteType ?? this.InternalQuoteType ?? this.OwnerDocument.GlobalAttributeValueQuote ?? AttributeValueQuote.DoubleQuote; }
-            set { _quoteType = value != AttributeValueQuote.Initial ? (AttributeValueQuote?)value : null; }
+            get => _quoteType ?? InternalQuoteType ?? OwnerDocument.GlobalAttributeValueQuote ?? AttributeValueQuote.DoubleQuote; set => _quoteType = value != AttributeValueQuote.Initial ? value : null;
         }
 
         /// <summary>
@@ -169,10 +142,7 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets the stream position of this attribute in the document, relative to the start of the document.
         /// </summary>
-        public int StreamPosition
-        {
-            get { return _streamposition; }
-        }
+        public int StreamPosition => _streamposition;
 
         /// <summary>
         /// Gets or sets the value of the attribute.
@@ -202,10 +172,10 @@ namespace HtmlAgilityPack
             set
             {
                 _value = value;
-                if (!string.IsNullOrEmpty(_value) && (this.QuoteType == AttributeValueQuote.WithoutValue || this.QuoteType == AttributeValueQuote.None))
+                if (!string.IsNullOrEmpty(_value) && (QuoteType == AttributeValueQuote.WithoutValue || QuoteType == AttributeValueQuote.None))
                 {
-                    this.InternalQuoteType = this.OwnerDocument.GlobalAttributeValueQuote != AttributeValueQuote.Initial ?
-                        (this.OwnerDocument.GlobalAttributeValueQuote ?? AttributeValueQuote.DoubleQuote)
+                    InternalQuoteType = OwnerDocument.GlobalAttributeValueQuote != AttributeValueQuote.Initial ?
+                        (OwnerDocument.GlobalAttributeValueQuote ?? AttributeValueQuote.DoubleQuote)
                         : AttributeValueQuote.DoubleQuote;
                 }
 
@@ -216,20 +186,11 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets the DeEntitized value of the attribute.
         /// </summary>
-        public string? DeEntitizeValue
-        {
-            get { return HtmlEntity.DeEntitize(Value!); }
-        }
+        public string? DeEntitizeValue => HtmlEntity.DeEntitize(Value!);
 
-        internal string XmlName
-        {
-            get { return HtmlDocument.GetXmlName(Name!, true, OwnerDocument.OptionPreserveXmlNamespaces); }
-        }
+        internal string XmlName => HtmlDocument.GetXmlName(Name!, true, OwnerDocument.OptionPreserveXmlNamespaces);
 
-        internal string? XmlValue
-        {
-            get { return Value; }
-        }
+        internal string? XmlValue => Value;
 
         /// <summary>
         /// Gets a valid XPath string that points to this Attribute
@@ -254,12 +215,7 @@ namespace HtmlAgilityPack
         /// <returns>A 32-bit signed integer that indicates the relative order of the names comparison.</returns>
         public int CompareTo(object? obj)
         {
-            if (obj is not HtmlAttribute att)
-            {
-                throw new ArgumentException(null, nameof(obj));
-            }
-
-            return Name!.CompareTo(att.Name);
+            return obj is not HtmlAttribute att ? throw new ArgumentException(null, nameof(obj)) : Name!.CompareTo(att.Name);
         }
 
         #endregion
@@ -298,15 +254,22 @@ namespace HtmlAgilityPack
         private string? GetRelativeXpath()
         {
             if (OwnerNode is null)
+            {
                 return Name;
+            }
 
             int i = 1;
             foreach (HtmlAttribute node in OwnerNode.Attributes!)
             {
-                if (node.Name != Name) continue;
+                if (node.Name != Name)
+                {
+                    continue;
+                }
 
                 if (node == this)
+                {
                     break;
+                }
 
                 i++;
             }

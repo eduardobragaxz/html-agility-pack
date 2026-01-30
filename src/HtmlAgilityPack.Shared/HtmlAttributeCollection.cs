@@ -37,34 +37,28 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
     /// <summary>
     /// Gets the number of elements actually contained in the list.
     /// </summary>
-    public int Count
-    {
-        get { return items.Count; }
-    }
+    public int Count => items.Count;
 
     /// <summary>
     /// Gets readonly status of colelction
     /// </summary>
-    public bool IsReadOnly
-    {
-        get { return false; }
-    }
+    public bool IsReadOnly => false;
 
     /// <summary>
     /// Gets the attribute at the specified index.
     /// </summary>
     public HtmlAttribute this[int index]
     {
-        get { return items[index]; }
+        get => items[index];
         set
         {
-            var oldValue = items[index];
+            HtmlAttribute oldValue = items[index];
 
             items[index] = value;
 
             if (oldValue.Name != value.Name)
             {
-                Hashitems.Remove(oldValue.Name!);
+                _ = Hashitems.Remove(oldValue.Name!);
             }
             Hashitems[value.Name!] = value;
 
@@ -89,7 +83,7 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
         {
             if (!Hashitems.TryGetValue(name, out HtmlAttribute? currentValue))
             {
-                Append(value);
+                _ = Append(value);
             }
             else
             {
@@ -106,7 +100,7 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
     /// <param name="value"></param>
     public void Add(string name, string value)
     {
-        Append(name, value);
+        _ = Append(name, value);
     }
 
 
@@ -116,16 +110,16 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
     /// <param name="item"></param>
     public void Add(HtmlAttribute item)
     {
-        Append(item);
+        _ = Append(item);
     }
 
     /// <summary>Adds a range supplied items to collection.</summary>
     /// <param name="items">An IEnumerable&lt;HtmlAttribute&gt; of items to append to this.</param>
     public void AddRange(IEnumerable<HtmlAttribute> items)
     {
-        foreach (var item in items)
+        foreach (HtmlAttribute item in items)
         {
-            Append(item);
+            _ = Append(item);
         }
     }
 
@@ -133,7 +127,7 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
     /// <param name="items">A Dictionary&lt;string,string&gt; of items to append to this.</param>
     public void AddRange(Dictionary<string, string> items)
     {
-        foreach (var item in items)
+        foreach (KeyValuePair<string, string> item in items)
         {
             Add(item.Key, item.Value);
         }
@@ -240,7 +234,7 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
     public void RemoveAt(int index)
     {
         HtmlAttribute att = items[index];
-        Hashitems.Remove(att.Name!);
+        _ = Hashitems.Remove(att.Name!);
         items.RemoveAt(index);
 
         _ownernode.SetChanged();
@@ -257,7 +251,7 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
     /// <returns>The appended attribute.</returns>
     public HtmlAttribute Append(HtmlAttribute? newAttribute)
     {
-        if (_ownernode.NodeType == HtmlNodeType.Text || _ownernode.NodeType == HtmlNodeType.Comment)
+        if (_ownernode.NodeType is HtmlNodeType.Text or HtmlNodeType.Comment)
         {
             throw new Exception("A Text or Comment node cannot have attributes.");
         }
@@ -304,8 +298,10 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
     {
         for (int i = 0; i < items.Count; i++)
         {
-            if (String.Equals(items[i].Name, name, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(items[i].Name, name, StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+            }
         }
 
         return false;
@@ -350,7 +346,7 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
         for (int i = items.Count - 1; i >= 0; i--)
         {
             HtmlAttribute att = items[i];
-            if (String.Equals(att.Name, name, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(att.Name, name, StringComparison.OrdinalIgnoreCase))
             {
                 RemoveAt(i);
             }
@@ -381,8 +377,10 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
     {
         for (int i = 0; i < items.Count; i++)
         {
-            if (String.Equals(items[i].Name, attributeName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(items[i].Name, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
                 yield return items[i];
+            }
         }
     }
 
@@ -413,8 +411,10 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
 
         for (int i = 0; i < items.Count; i++)
         {
-            if ((items[i]) == attribute)
+            if (items[i] == attribute)
+            {
                 return i;
+            }
         }
 
         return -1;
@@ -426,8 +426,10 @@ public class HtmlAttributeCollection : IList<HtmlAttribute>
 
         for (int i = 0; i < items.Count; i++)
         {
-            if (String.Equals((items[i]).Name, name, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(items[i].Name, name, StringComparison.OrdinalIgnoreCase))
+            {
                 return i;
+            }
         }
 
         return -1;

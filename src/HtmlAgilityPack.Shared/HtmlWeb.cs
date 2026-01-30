@@ -9,19 +9,13 @@
 
 #region
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using System.Security;
 #if !NETSTANDARD
-using System.Security.Permissions;
 #else
 using System.Linq;
 #endif
 using System.Text;
 using System.Xml;
-using Microsoft.Win32;
 #if FX45 || NETSTANDARD
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -84,22 +78,7 @@ public partial class HtmlWeb
 
     #region Fields
 
-    private bool _autoDetectEncoding = true;
-    private bool _cacheOnly;
-
-    private string? _cachePath;
-    private bool _fromCache;
-    private int _requestDuration;
-    private Uri? _responseUri;
-    private HttpStatusCode? _statusCode = HttpStatusCode.OK;
-    private int _streamBufferSize = 1024;
-    private bool _useCookies;
-    private bool _usingCache;
     private bool _usingCacheAndLoad;
-    private bool _usingCacheIfExists;
-    private string _userAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:x.x.x) Gecko/20041107 Firefox/x.x";
-    private int _timeout = 100000;
-    private int? _maxAutoRedirects;
 
     /// <summary>
     /// Occurs after an HTTP request has been executed.
@@ -811,8 +790,8 @@ public partial class HtmlWeb
     /// <value>Must be greater than 0.</value>
     public int? MaxAutoRedirects
     {
-        set { if (value <= 0) { throw new ArgumentOutOfRangeException("MaxAutoRedirects"); } else { _maxAutoRedirects = value; } }
-        get { return _maxAutoRedirects; }
+        set => field = value <= 0 ? throw new ArgumentOutOfRangeException("MaxAutoRedirects") : value;
+        get;
     }
 
     /// <summary>
@@ -820,29 +799,18 @@ public partial class HtmlWeb
     /// </summary>
     public int Timeout
     {
-        get { return _timeout; }
-        set { if (value <= 0 && value != -1) { throw new ArgumentOutOfRangeException("Timeout"); } else { _timeout = value; } }
-    }
+        get; set => field = value is <= 0 and not (-1) ? throw new ArgumentOutOfRangeException("Timeout") : value;
+    } = 100000;
 
     /// <summary>
     /// Gets or Sets a value indicating if document encoding must be automatically detected.
     /// </summary>
-    public bool AutoDetectEncoding
-    {
-        get { return _autoDetectEncoding; }
-        set { _autoDetectEncoding = value; }
-    }
-
-    private Encoding? _encoding;
+    public bool AutoDetectEncoding { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the Encoding used to override the response stream from any web request
     /// </summary>
-    public Encoding? OverrideEncoding
-    {
-        get { return _encoding; }
-        set { _encoding = value; }
-    }
+    public Encoding? OverrideEncoding { get; set; }
 
     /// <summary>
     /// Gets or Sets a value indicating whether to get document only from the cache.
@@ -850,15 +818,14 @@ public partial class HtmlWeb
     /// </summary>
     public bool CacheOnly
     {
-        get { return _cacheOnly; }
-        set
+        get; set
         {
-            if ((value) && !UsingCache)
+            if (value && !UsingCache)
             {
                 throw new HtmlWebException("Cache is not enabled. Set UsingCache to true first.");
             }
 
-            _cacheOnly = value;
+            field = value;
         }
     }
 
@@ -866,78 +833,53 @@ public partial class HtmlWeb
     /// Gets or Sets a value indicating whether to get document from the cache if exists, otherwise from the web
     /// A value indicating whether to get document from the cache if exists, otherwise from the web
     /// </summary>
-    public bool UsingCacheIfExists
-    {
-        get { return _usingCacheIfExists; }
-        set { _usingCacheIfExists = value; }
-    }
+    public bool UsingCacheIfExists { get; set; }
 
     /// <summary>
     /// Gets or Sets the cache path. If null, no caching mechanism will be used.
     /// </summary>
-    public string? CachePath
-    {
-        get { return _cachePath; }
-        set { _cachePath = value; }
-    }
+    public string? CachePath { get; set; }
 
     /// <summary>
     /// Gets a value indicating if the last document was retrieved from the cache.
     /// </summary>
-    public bool FromCache
-    {
-        get { return _fromCache; }
-    }
+    public bool FromCache { get; private set; }
 
     /// <summary>
     /// Gets the last request duration in milliseconds.
     /// </summary>
-    public int RequestDuration
-    {
-        get { return _requestDuration; }
-    }
+    public int RequestDuration { get; private set; }
 
     /// <summary>
     /// Gets the URI of the Internet resource that actually responded to the request.
     /// </summary>
-    public Uri? ResponseUri
-    {
-        get { return _responseUri; }
-    }
+    public Uri? ResponseUri { get; private set; }
 
     /// <summary>
     /// Gets the last request status.
     /// </summary>
-    public HttpStatusCode? StatusCode
-    {
-        get { return _statusCode; }
-    }
+    public HttpStatusCode? StatusCode { get; private set; } = HttpStatusCode.OK;
 
     /// <summary>
     /// Gets or Sets the size of the buffer used for memory operations.
     /// </summary>
     public int StreamBufferSize
     {
-        get { return _streamBufferSize; }
-        set
+        get; set
         {
-            if (_streamBufferSize <= 0)
+            if (field <= 0)
             {
                 throw new ArgumentException("Size must be greater than zero.");
             }
 
-            _streamBufferSize = value;
+            field = value;
         }
-    }
+    } = 1024;
 
     /// <summary>
     /// Gets or Sets a value indicating if cookies will be stored.
     /// </summary>
-    public bool UseCookies
-    {
-        get { return _useCookies; }
-        set { _useCookies = value; }
-    }
+    public bool UseCookies { get; set; }
 
     /// <summary>Gets or sets a value indicating whether redirect should be captured instead of the current location.</summary>
     /// <value>True if capture redirect, false if not.</value>
@@ -946,26 +888,22 @@ public partial class HtmlWeb
     /// <summary>
     /// Gets or Sets the User Agent HTTP 1.1 header sent on any webrequest
     /// </summary>
-    public string UserAgent
-    {
-        get { return _userAgent; }
-        set { _userAgent = value; }
-    }
+    public string UserAgent { get; set; } = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:x.x.x) Gecko/20041107 Firefox/x.x";
 
     /// <summary>
     /// Gets or Sets a value indicating whether the caching mechanisms should be used or not.
     /// </summary>
     public bool UsingCache
     {
-        get { return _cachePath is not null && _usingCache; }
+        get => CachePath is not null && field;
         set
         {
-            if ((value) && (_cachePath is null))
+            if (value && (CachePath is null))
             {
                 throw new HtmlWebException("You need to define a CachePath first.");
             }
 
-            _usingCache = value;
+            field = value;
         }
     }
 
@@ -1121,15 +1059,10 @@ public partial class HtmlWeb
     public void Get(string url, string path, WebProxy proxy, NetworkCredential credentials, string method)
     {
         Uri uri = new(url);
-        if ((uri.Scheme == Uri.UriSchemeHttps) ||
-            (uri.Scheme == Uri.UriSchemeHttp))
-        {
-            Get(uri, method, path, null, proxy, credentials);
-        }
-        else
-        {
-            throw new HtmlWebException("Unsupported uri scheme: '" + uri.Scheme + "'.");
-        }
+        _ = (uri.Scheme == Uri.UriSchemeHttps) ||
+            (uri.Scheme == Uri.UriSchemeHttp)
+            ? Get(uri, method, path, null, proxy, credentials)
+            : throw new HtmlWebException("Unsupported uri scheme: '" + uri.Scheme + "'.");
     }
 #endif
 
@@ -1180,7 +1113,7 @@ public partial class HtmlWeb
         string cachePath;
         if (uri.AbsolutePath == "/")
         {
-            cachePath = Path.Combine(_cachePath!, ".htm");
+            cachePath = Path.Combine(CachePath!, ".htm");
         }
         else
         {
@@ -1194,14 +1127,9 @@ public partial class HtmlWeb
                 absolutePathWithoutBadChar = absolutePathWithoutBadChar.Replace(c.ToString(), "");
             }
 
-            if (uri.AbsolutePath[^1] == Path.AltDirectorySeparatorChar)
-            {
-                cachePath = Path.Combine(_cachePath!, (uri.Host + absolutePathWithoutBadChar.TrimEnd(Path.AltDirectorySeparatorChar)).Replace('/', '\\') + ".htm");
-            }
-            else
-            {
-                cachePath = Path.Combine(_cachePath!, (uri.Host + absolutePathWithoutBadChar.Replace('/', '\\')));
-            }
+            cachePath = uri.AbsolutePath[^1] == Path.AltDirectorySeparatorChar
+                ? Path.Combine(CachePath!, (uri.Host + absolutePathWithoutBadChar.TrimEnd(Path.AltDirectorySeparatorChar)).Replace('/', '\\') + ".htm")
+                : Path.Combine(CachePath!, uri.Host + absolutePathWithoutBadChar.Replace('/', '\\'));
         }
 
         return cachePath;
@@ -1350,9 +1278,13 @@ public partial class HtmlWeb
                 };
                 doc.OptionAutoCloseOnEnd = true;
                 if (OverrideEncoding is not null)
+                {
                     doc.Load(uri.OriginalString, OverrideEncoding);
+                }
                 else
-                    doc.DetectEncodingAndLoad(uri.OriginalString, _autoDetectEncoding);
+                {
+                    doc.DetectEncodingAndLoad(uri.OriginalString, AutoDetectEncoding);
+                }
             }
             else
             {
@@ -1413,7 +1345,7 @@ public partial class HtmlWeb
                     OptionAutoCloseOnEnd = false
                 };
                 doc.OptionAutoCloseOnEnd = true;
-                doc.DetectEncodingAndLoad(uri.OriginalString, _autoDetectEncoding);
+                doc.DetectEncodingAndLoad(uri.OriginalString, AutoDetectEncoding);
             }
             else
             {
@@ -1535,7 +1467,7 @@ public partial class HtmlWeb
             string? dir = Path.GetDirectoryName(target);
             if (dir is not null && !Directory.Exists(dir))
             {
-                Directory.CreateDirectory(dir);
+                _ = Directory.CreateDirectory(dir);
             }
         }
     }
@@ -1548,7 +1480,7 @@ public partial class HtmlWeb
 
     private static DateTime RemoveMilliseconds(DateTimeOffset? offset)
     {
-        var t = offset ?? DateTimeOffset.Now;
+        DateTimeOffset t = offset ?? DateTimeOffset.Now;
         return new DateTime(t.Year, t.Month, t.Day, t.Hour, t.Minute, t.Second, 0);
     }
 
@@ -1595,16 +1527,16 @@ public partial class HtmlWeb
 #pragma warning restore SYSLIB0014 // Type or member is obsolete
         if (MaxAutoRedirects.HasValue)
         {
-            req?.MaximumAutomaticRedirections = MaxAutoRedirects.Value;
+            _ = (req?.MaximumAutomaticRedirections = MaxAutoRedirects.Value);
         }
-        req?.Timeout = Timeout;
-        req?.Method = method;
-        req?.UserAgent = UserAgent;
-        req?.AutomaticDecompression = AutomaticDecompression;
+        _ = (req?.Timeout = Timeout);
+        _ = (req?.Method = method);
+        _ = (req?.UserAgent = UserAgent);
+        _ = (req?.AutomaticDecompression = AutomaticDecompression);
 
         if (CaptureRedirect)
         {
-            req?.AllowAutoRedirect = false;
+            _ = (req?.AllowAutoRedirect = false);
         }
 
         if (proxy is not null)
@@ -1612,19 +1544,19 @@ public partial class HtmlWeb
             if (creds is not null)
             {
                 proxy.Credentials = creds;
-                req?.Credentials = creds;
+                _ = (req?.Credentials = creds);
             }
             else
             {
                 proxy.Credentials = CredentialCache.DefaultCredentials;
-                req?.Credentials = CredentialCache.DefaultCredentials;
+                _ = (req?.Credentials = CredentialCache.DefaultCredentials);
             }
 
-            req?.Proxy = proxy;
+            _ = (req?.Proxy = proxy);
         }
 
-        _fromCache = false;
-        _requestDuration = 0;
+        FromCache = false;
+        RequestDuration = 0;
         int tc = Environment.TickCount;
 
         if (UsingCache)
@@ -1637,7 +1569,7 @@ public partial class HtmlWeb
             }
         }
 
-        if (_cacheOnly || _usingCacheIfExists)
+        if (CacheOnly || UsingCacheIfExists)
         {
             if (File.Exists(cachePath))
             {
@@ -1645,22 +1577,25 @@ public partial class HtmlWeb
                 {
                     IOLibrary.CopyAlways(cachePath, path);
                     // touch the file
-                    if (cachePath is not null) File.SetLastWriteTime(path, File.GetLastWriteTime(cachePath));
+                    if (cachePath is not null)
+                    {
+                        File.SetLastWriteTime(path, File.GetLastWriteTime(cachePath));
+                    }
                 }
 
-                _fromCache = true;
+                FromCache = true;
                 return HttpStatusCode.NotModified;
 
             }
-            else if (_cacheOnly)
+            else if (CacheOnly)
             {
                 throw new HtmlWebException("File was not found at cache path: '" + cachePath + "'");
             }
         }
 
-        if (_useCookies)
+        if (UseCookies)
         {
-            req?.CookieContainer = new CookieContainer();
+            _ = (req?.CookieContainer = new CookieContainer());
         }
 
         if (PreRequest is not null)
@@ -1689,7 +1624,7 @@ public partial class HtmlWeb
         }
         catch (WebException we)
         {
-            _requestDuration = Environment.TickCount - tc;
+            RequestDuration = Environment.TickCount - tc;
             resp = (HttpWebResponse?)we.Response;
             if (resp is null)
             {
@@ -1710,16 +1645,16 @@ public partial class HtmlWeb
         }
         catch (Exception)
         {
-            _requestDuration = Environment.TickCount - tc;
+            RequestDuration = Environment.TickCount - tc;
             throw;
         }
 
         // allow our user to get some info from the response
         PostResponse?.Invoke(req, resp);
 
-        _requestDuration = Environment.TickCount - tc;
-        _responseUri = resp?.ResponseUri;
-        var statusCode = resp?.StatusCode;
+        RequestDuration = Environment.TickCount - tc;
+        ResponseUri = resp?.ResponseUri;
+        HttpStatusCode? statusCode = resp?.StatusCode;
         bool html = IsHtmlContent(resp!.ContentType);
         bool isUnknown = string.IsNullOrEmpty(resp.ContentType);
 
@@ -1749,14 +1684,16 @@ public partial class HtmlWeb
         }
 
         if (OverrideEncoding is not null)
+        {
             respenc = OverrideEncoding;
+        }
 
         if (CaptureRedirect)
         {
             // Found == 302
             if (resp.StatusCode == HttpStatusCode.Found)
             {
-                var location = resp.Headers["Location"];
+                string? location = resp.Headers["Location"];
 
                 // Do the redirection after we've eaten all the cookies...
                 if (!Uri.TryCreate(location, UriKind.Absolute, out Uri? locationUri))
@@ -1773,7 +1710,7 @@ public partial class HtmlWeb
         {
             if (UsingCache)
             {
-                _fromCache = true;
+                FromCache = true;
                 if (path is not null && cachePath is not null)
                 {
                     IOLibrary.CopyAlways(cachePath, path);
@@ -1794,7 +1731,7 @@ public partial class HtmlWeb
             if (UsingCache)
             {
                 // NOTE: LastModified does not contain milliseconds, so we remove them to the file
-                SaveStream(s, cachePath, RemoveMilliseconds(resp.LastModified), _streamBufferSize);
+                _ = SaveStream(s, cachePath, RemoveMilliseconds(resp.LastModified), StreamBufferSize);
 
                 // save headers
                 SaveCacheHeaders(req?.RequestUri!, resp);
@@ -2141,8 +2078,8 @@ public partial class HtmlWeb
             OptionAutoCloseOnEnd = false,
             OptionFixNestedTags = true
         };
-        _statusCode = Get(uri, method, null, doc, proxy, creds);
-        if (_statusCode == HttpStatusCode.NotModified)
+        StatusCode = Get(uri, method, null, doc, proxy, creds);
+        if (StatusCode == HttpStatusCode.NotModified)
         {
             // read cached encoding
             doc.DetectEncodingAndLoad(GetCachePath(uri));
@@ -2180,13 +2117,13 @@ public partial class HtmlWeb
             XmlNode entry = doc.CreateElement("h");
             XmlAttribute att = doc.CreateAttribute("n");
             att.Value = header;
-            entry?.Attributes?.Append(att);
+            _ = (entry?.Attributes?.Append(att));
 
             att = doc.CreateAttribute("v");
             att.Value = resp.Headers[header];
-            entry?.Attributes?.Append(att);
+            _ = (entry?.Attributes?.Append(att));
 
-            cache?.AppendChild(entry!);
+            _ = (cache?.AppendChild(entry!));
         }
 
         doc.Save(file);

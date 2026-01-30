@@ -31,16 +31,7 @@ public partial class HtmlDocument
     {
         ArgumentNullException.ThrowIfNull(path);
 
-        Encoding? enc;
-        if (detectEncoding)
-        {
-            enc = DetectEncoding(path);
-        }
-        else
-        {
-            enc = null;
-        }
-
+        Encoding? enc = detectEncoding ? DetectEncoding(path) : null;
         if (enc is null)
         {
             Load(path);

@@ -13,7 +13,6 @@ internal class EncodingFoundException : Exception
 {
     #region Fields
 
-    private readonly Encoding _encoding;
 
     #endregion
 
@@ -21,17 +20,14 @@ internal class EncodingFoundException : Exception
 
     internal EncodingFoundException(Encoding encoding)
     {
-        _encoding = encoding;
+        Encoding = encoding;
     }
 
     #endregion
 
     #region Properties
 
-    internal Encoding Encoding
-    {
-        get { return _encoding; }
-    }
+    internal Encoding Encoding { get; }
 
     #endregion
 }

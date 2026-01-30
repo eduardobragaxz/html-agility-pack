@@ -30,8 +30,7 @@ public class MixedCodeDocumentTextFragment : MixedCodeDocumentFragment
     /// </summary>
     public string? Text
     {
-        get { return FragmentText; }
-        set { FragmentText = value; }
+        get => FragmentText; set => FragmentText = value;
     }
 
     #endregion

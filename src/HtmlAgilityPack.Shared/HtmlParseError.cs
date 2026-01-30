@@ -14,12 +14,6 @@ namespace HtmlAgilityPack
     {
         #region Fields
 
-        private readonly HtmlParseErrorCode _code;
-        private readonly int _line;
-        private readonly int _linePosition;
-        private readonly string _reason;
-        private readonly string? _sourceText;
-        private readonly int _streamPosition;
 
         #endregion
 
@@ -33,12 +27,12 @@ namespace HtmlAgilityPack
             string? sourceText,
             string reason)
         {
-            _code = code;
-            _line = line;
-            _linePosition = linePosition;
-            _streamPosition = streamPosition;
-            _sourceText = sourceText;
-            _reason = reason;
+            Code = code;
+            Line = line;
+            LinePosition = linePosition;
+            StreamPosition = streamPosition;
+            SourceText = sourceText;
+            Reason = reason;
         }
 
         #endregion
@@ -48,50 +42,32 @@ namespace HtmlAgilityPack
         /// <summary>
         /// Gets the type of error.
         /// </summary>
-        public HtmlParseErrorCode Code
-        {
-            get { return _code; }
-        }
+        public HtmlParseErrorCode Code { get; }
 
         /// <summary>
         /// Gets the line number of this error in the document.
         /// </summary>
-        public int Line
-        {
-            get { return _line; }
-        }
+        public int Line { get; }
 
         /// <summary>
         /// Gets the column number of this error in the document.
         /// </summary>
-        public int LinePosition
-        {
-            get { return _linePosition; }
-        }
+        public int LinePosition { get; }
 
         /// <summary>
         /// Gets a description for the error.
         /// </summary>
-        public string Reason
-        {
-            get { return _reason; }
-        }
+        public string Reason { get; }
 
         /// <summary>
         /// Gets the the full text of the line containing the error.
         /// </summary>
-        public string? SourceText
-        {
-            get { return _sourceText; }
-        }
+        public string? SourceText { get; }
 
         /// <summary>
         /// Gets the absolute stream position of this error in the document, relative to the start of the document.
         /// </summary>
-        public int StreamPosition
-        {
-            get { return _streamPosition; }
-        }
+        public int StreamPosition { get; }
 
         #endregion
     }

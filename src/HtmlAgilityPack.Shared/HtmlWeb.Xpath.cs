@@ -7,7 +7,6 @@
 
 #if !(NETSTANDARD1_3 || NETSTANDARD1_6) && !METRO
 
-using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.Xsl;
