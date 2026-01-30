@@ -6,7 +6,6 @@
 // Copyright © ZZZ Projects Inc. All rights reserved.
 
 #if !NETSTANDARD1_3 && !NETSTANDARD1_6 && !METRO
-using System;
 using System.Diagnostics;
 
 namespace HtmlAgilityPack;

@@ -48,12 +48,7 @@ public partial class HtmlNode : IXPathNavigable
             list.Add(n?.CurrentNode, false);
         }
 
-        if (list.Count == 0 && !OwnerDocument.OptionEmptyCollection)
-        {
-            return null;
-        }
-
-        return list;
+        return list.Count == 0 && !OwnerDocument.OptionEmptyCollection ? null : list;
     }
 
     /// <summary>
@@ -73,12 +68,7 @@ public partial class HtmlNode : IXPathNavigable
             list.Add(n?.CurrentNode, false);
         }
 
-        if (list.Count == 0 && !OwnerDocument.OptionEmptyCollection)
-        {
-            return null;
-        }
-
-        return list;
+        return list.Count == 0 && !OwnerDocument.OptionEmptyCollection ? null : list;
     }
 
     /// <summary>

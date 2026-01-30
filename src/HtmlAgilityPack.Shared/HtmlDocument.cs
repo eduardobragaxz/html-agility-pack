@@ -5,9 +5,6 @@
 // More projects: https://zzzprojects.com/
 // Copyright © ZZZ Projects Inc. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -31,7 +28,7 @@ public partial class HtmlDocument
         {
             if (value)
             {
-                HtmlNode.ElementsFlags.Remove("p");
+                _ = HtmlNode.ElementsFlags.Remove("p");
             }
             else
             {
@@ -58,15 +55,12 @@ public partial class HtmlDocument
     /// <summary>
     /// Defines the max level we would go deep into the html document
     /// </summary>
-    private static int _maxDepthLevel = int.MaxValue;
 
     private int _c;
     [Obsolete]
     private Crc32? _crc32;
     private HtmlAttribute? _currentattribute;
     private HtmlNode? _currentnode;
-    private Encoding? _declaredencoding;
-    private HtmlNode _documentnode;
     private bool _fullcomment;
     private int _index;
     internal Dictionary<string, HtmlNode> Lastnodes = [];
@@ -78,10 +72,7 @@ public partial class HtmlDocument
     private bool _onlyDetectEncoding;
     internal Dictionary<int, HtmlNode>? Openednodes;
     private List<HtmlParseError> _parseerrors = [];
-    private string? _remainder;
-    private int _remainderOffset;
     private ParseState _state;
-    private Encoding? _streamencoding;
     private bool _useHtmlEncodingForStream;
 
     /// <summary>The HtmlDocument Text. Careful if you modify it.</summary>
@@ -159,7 +150,7 @@ public partial class HtmlDocument
     public bool OptionOutputAsXml;
 
     /// <summary>True to disable implicit end. An explicit end logic will be used instead.</summary>
-		public bool DisableImplicitEnd;
+    public bool DisableImplicitEnd;
 
     /// <summary>
     /// If used together with <see cref="OptionOutputAsXml"/> and enabled, Xml namespaces in element names are preserved. Default is false.
@@ -259,7 +250,7 @@ public partial class HtmlDocument
     {
         DefaultBuilder?.Invoke(this);
 
-        _documentnode = CreateNode(HtmlNodeType.Document, 0);
+        DocumentNode = CreateNode(HtmlNodeType.Document, 0);
 #if SILVERLIGHT || METRO || NETSTANDARD1_3 || NETSTANDARD1_6
         OptionDefaultStreamEncoding = Encoding.UTF8;
 #else
@@ -273,89 +264,58 @@ public partial class HtmlDocument
 
     /// <summary>Gets the parsed text.</summary>
     /// <value>The parsed text.</value>
-    public string? ParsedText
-    {
-        get { return Text; }
-    }
+    public string? ParsedText => Text;
 
     /// <summary>
     /// Defines the max level we would go deep into the html document. If this depth level is exceeded, and exception is
     /// thrown.
     /// </summary>
-    public static int MaxDepthLevel
-    {
-        get { return _maxDepthLevel; }
-        set { _maxDepthLevel = value; }
-    }
+    public static int MaxDepthLevel { get; set; } = int.MaxValue;
 
     /// <summary>
     /// Gets the document CRC32 checksum if OptionComputeChecksum was set to true before parsing, 0 otherwise.
     /// </summary>
     public int CheckSum
-    {
 #pragma warning disable CS0612 // Type or member is obsolete
-        get { return _crc32 is null ? 0 : (int)_crc32.CheckSum; }
-#pragma warning restore CS0612 // Type or member is obsolete
-    }
+        => _crc32 is null ? 0 : (int)_crc32.CheckSum;
 
     /// <summary>
     /// Gets the document's declared encoding.
     /// Declared encoding is determined using the meta http-equiv="content-type" content="text/html;charset=XXXXX" html node (pre-HTML5) or the meta charset="XXXXX" html node (HTML5).
     /// </summary>
-    public Encoding? DeclaredEncoding
-    {
-        get { return _declaredencoding; }
-    }
+    public Encoding? DeclaredEncoding { get; private set; }
 
     /// <summary>
     /// Gets the root node of the document.
     /// </summary>
-    public HtmlNode DocumentNode
-    {
-        get { return _documentnode; }
-    }
+    public HtmlNode DocumentNode { get; private set; }
 
     /// <summary>
     /// Gets the document's output encoding.
     /// </summary>
-    public Encoding Encoding
-    {
-        get { return GetOutEncoding(); }
-    }
+    public Encoding Encoding => GetOutEncoding();
 
     /// <summary>
     /// Gets a list of parse errors found in the document.
     /// </summary>
-    public IEnumerable<HtmlParseError> ParseErrors
-    {
-        get { return _parseerrors; }
-    }
+    public IEnumerable<HtmlParseError> ParseErrors => _parseerrors;
 
     /// <summary>
     /// Gets the remaining text.
     /// Will always be null if OptionStopperNodeName is null.
     /// </summary>
-    public string? Remainder
-    {
-        get { return _remainder; }
-    }
+    public string? Remainder { get; private set; }
 
     /// <summary>
     /// Gets the offset of Remainder in the original Html text.
     /// If OptionStopperNodeName is null, this will return the length of the original Html text.
     /// </summary>
-    public int RemainderOffset
-    {
-        get { return _remainderOffset; }
-    }
+    public int RemainderOffset { get; private set; }
 
     /// <summary>
     /// Gets the document's stream encoding.
     /// </summary>
-    public Encoding? StreamEncoding
-    {
-        get { return _streamencoding; }
-    }
+    public Encoding? StreamEncoding { get; private set; }
 
     #endregion
 
@@ -376,11 +336,11 @@ public partial class HtmlDocument
     /// 
     /// </summary>
     /// <param name="tagName"></param>
-		public void UseAttributeOriginalName(string tagName)
+    public void UseAttributeOriginalName(string tagName)
     {
-        foreach (var nod in this.DocumentNode.SelectNodes("//" + tagName)!)
+        foreach (HtmlNode nod in DocumentNode.SelectNodes("//" + tagName)!)
         {
-            foreach (var attribut in nod?.Attributes!)
+            foreach (HtmlAttribute attribut in nod?.Attributes!)
             {
                 attribut.UseOriginalName = true;
             }
@@ -394,7 +354,7 @@ public partial class HtmlDocument
     /// <param name="isAttribute"></param>
     /// <param name="preserveXmlNamespaces"></param>
     /// <returns></returns>
-		public static string GetXmlName(string name, bool isAttribute, bool preserveXmlNamespaces)
+    public static string GetXmlName(string name, bool isAttribute, bool preserveXmlNamespaces)
     {
         string xmlname = string.Empty;
         bool nameisok = true;
@@ -424,12 +384,7 @@ public partial class HtmlDocument
             }
         }
 
-        if (nameisok)
-        {
-            return xmlname;
-        }
-
-        return "_" + xmlname;
+        return nameisok ? xmlname : "_" + xmlname;
     }
 
     /// <summary>
@@ -459,12 +414,7 @@ public partial class HtmlDocument
     /// <returns>true if if the specified character is considered as a whitespace character.</returns>
     public static bool IsWhiteSpace(int c)
     {
-        if ((c == 10) || (c == 13) || (c == 32) || (c == 9))
-        {
-            return true;
-        }
-
-        return false;
+        return c is 10 or 13 or 32 or 9;
     }
 
     /// <summary>
@@ -597,36 +547,22 @@ public partial class HtmlDocument
         ArgumentNullException.ThrowIfNull(reader);
 
         _onlyDetectEncoding = true;
-        if (OptionCheckSyntax)
-        {
-            Openednodes = [];
-        }
-        else
-        {
-            Openednodes = null;
-        }
+        Openednodes = OptionCheckSyntax ? [] : null;
 
-        if (OptionUseIdAttribute)
-        {
-            Nodesid = new Dictionary<string, HtmlNode>(StringComparer.OrdinalIgnoreCase);
-        }
-        else
-        {
-            Nodesid = null;
-        }
+        Nodesid = OptionUseIdAttribute ? new Dictionary<string, HtmlNode>(StringComparer.OrdinalIgnoreCase) : null;
 
         if (reader is StreamReader sr && !_useHtmlEncodingForStream)
         {
             Text = sr.ReadToEnd();
-            _streamencoding = sr.CurrentEncoding;
-            return _streamencoding;
+            StreamEncoding = sr.CurrentEncoding;
+            return StreamEncoding;
         }
 
-        _streamencoding = null;
-        _declaredencoding = null;
+        StreamEncoding = null;
+        DeclaredEncoding = null;
 
         Text = reader.ReadToEnd();
-        _documentnode = CreateNode(HtmlNodeType.Document, 0);
+        DocumentNode = CreateNode(HtmlNodeType.Document, 0);
 
         // this is almost a hack, but it allows us not to muck with the original parsing code
         try
@@ -638,7 +574,7 @@ public partial class HtmlDocument
             return ex.Encoding;
         }
 
-        return _streamencoding;
+        return StreamEncoding;
     }
 
 
@@ -665,12 +601,9 @@ public partial class HtmlDocument
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        if (Nodesid is null)
-        {
-            throw new Exception(HtmlExceptionUseIdAttributeFalse);
-        }
-
-        return Nodesid.TryGetValue(id, out HtmlNode? value)
+        return Nodesid is null
+            ? throw new Exception(HtmlExceptionUseIdAttributeFalse)
+            : Nodesid.TryGetValue(id, out HtmlNode? value)
             ? value
             : null;
     }
@@ -739,26 +672,16 @@ public partial class HtmlDocument
 
         _onlyDetectEncoding = false;
 
-        if (OptionCheckSyntax)
-            Openednodes = [];
-        else
-            Openednodes = null;
+        Openednodes = OptionCheckSyntax ? [] : null;
 
-        if (OptionUseIdAttribute)
-        {
-            Nodesid = new Dictionary<string, HtmlNode>(StringComparer.OrdinalIgnoreCase);
-        }
-        else
-        {
-            Nodesid = null;
-        }
+        Nodesid = OptionUseIdAttribute ? new Dictionary<string, HtmlNode>(StringComparer.OrdinalIgnoreCase) : null;
 
         if (reader is StreamReader sr)
         {
             try
             {
                 // trigger bom read if needed
-                sr.Peek();
+                _ = sr.Peek();
             }
             // ReSharper disable EmptyGeneralCatchClause
             catch (Exception)
@@ -767,20 +690,24 @@ public partial class HtmlDocument
                 // void on purpose
             }
 
-            _streamencoding = sr.CurrentEncoding;
+            StreamEncoding = sr.CurrentEncoding;
         }
         else
         {
-            _streamencoding = null;
+            StreamEncoding = null;
         }
 
-        _declaredencoding = null;
+        DeclaredEncoding = null;
 
         Text = reader.ReadToEnd();
-        _documentnode = CreateNode(HtmlNodeType.Document, 0);
+        DocumentNode = CreateNode(HtmlNodeType.Document, 0);
         Parse();
 
-        if (!OptionCheckSyntax || Openednodes is null) return;
+        if (!OptionCheckSyntax || Openednodes is null)
+        {
+            return;
+        }
+
         foreach (HtmlNode node in Openednodes.Values)
         {
             if (!node._starttag) // already reported
@@ -909,17 +836,23 @@ public partial class HtmlDocument
     internal Encoding GetOutEncoding()
     {
         // when unspecified, use the stream encoding first
-        return _declaredencoding ?? (_streamencoding ?? OptionDefaultStreamEncoding);
+        return DeclaredEncoding ?? StreamEncoding ?? OptionDefaultStreamEncoding;
     }
 
     internal HtmlNode? GetXmlDeclaration()
     {
-        if (!_documentnode.HasChildNodes)
+        if (!DocumentNode.HasChildNodes)
+        {
             return null;
+        }
 
-        foreach (HtmlNode? node in _documentnode._childnodes!)
+        foreach (HtmlNode? node in DocumentNode._childnodes!)
+        {
             if (node.Name == "?xml") // it's ok, names are case sensitive
+            {
                 return node;
+            }
+        }
 
         return null;
     }
@@ -927,15 +860,23 @@ public partial class HtmlDocument
     internal void SetIdForNode(HtmlNode? node, string? id)
     {
         if (!OptionUseIdAttribute)
+        {
             return;
+        }
 
         if ((Nodesid is null) || (id is null))
+        {
             return;
+        }
 
         if (node is null)
-            Nodesid.Remove(id);
+        {
+            _ = Nodesid.Remove(id);
+        }
         else
+        {
             Nodesid[id] = node;
+        }
     }
 
     internal void UpdateLastParentNode()
@@ -943,10 +884,12 @@ public partial class HtmlDocument
         do
         {
             if (_lastparentnode!.Closed)
+            {
                 _lastparentnode = _lastparentnode.ParentNode;
-        } while ((_lastparentnode is not null) && (_lastparentnode.Closed));
+            }
+        } while ((_lastparentnode is not null) && _lastparentnode.Closed);
 
-        _lastparentnode ??= _documentnode;
+        _lastparentnode ??= DocumentNode;
     }
 
     #endregion
@@ -963,7 +906,9 @@ public partial class HtmlDocument
     private void CloseCurrentNode()
     {
         if (_currentnode!.Closed) // text or document are by def closed
+        {
             return;
+        }
 
         bool error = false;
         HtmlNode? prev = Utilities.GetDictionaryValueOrDefault(Lastnodes, _currentnode.Name);
@@ -1003,13 +948,13 @@ public partial class HtmlDocument
                         while (futureChild.Count != 0)
                         {
                             HtmlNode node = futureChild.Pop();
-                            _lastparentnode.RemoveChild(node);
-                            foundNode.AppendChild(node);
+                            _ = _lastparentnode.RemoveChild(node);
+                            _ = foundNode.AppendChild(node);
                         }
                     }
                     else
                     {
-                        _lastparentnode.AppendChild(_currentnode);
+                        _ = _lastparentnode.AppendChild(_currentnode);
                     }
                 }
             }
@@ -1024,7 +969,7 @@ public partial class HtmlDocument
                     HtmlNode closenode = CreateNode(HtmlNodeType.Text, _currentnode._outerstartindex);
                     closenode._outerlength = _currentnode._outerlength;
                     ((HtmlTextNode)closenode).Text = ((HtmlTextNode)closenode).Text?.ToLowerInvariant();
-                    _lastparentnode?.AppendChild(closenode);
+                    _ = (_lastparentnode?.AppendChild(closenode));
                 }
                 else
                 {
@@ -1077,7 +1022,7 @@ public partial class HtmlDocument
         {
             if ((_lastparentnode is not null) &&
                 ((!HtmlNode.IsClosedElement(_currentnode.Name)) ||
-                 (_currentnode._starttag)))
+                 _currentnode._starttag))
             {
                 UpdateLastParentNode();
             }
@@ -1107,29 +1052,22 @@ public partial class HtmlDocument
     private HtmlNode? FindResetterNode(HtmlNode node, string name)
     {
         HtmlNode? resetter = Utilities.GetDictionaryValueOrDefault(Lastnodes, name);
-        if (resetter is null)
-            return null;
-
-        if (resetter.Closed)
-            return null;
-
-        if (resetter._streamposition < node._streamposition)
-        {
-            return null;
-        }
-
-        return resetter;
+        return resetter is null ? null : resetter.Closed ? null : resetter._streamposition < node._streamposition ? null : resetter;
     }
 
     private bool FindResetterNodes(HtmlNode node, string[]? names)
     {
         if (names is null)
+        {
             return false;
+        }
 
         for (int i = 0; i < names.Length; i++)
         {
             if (FindResetterNode(node, names[i]) is not null)
+            {
                 return true;
+            }
         }
 
         return false;
@@ -1138,11 +1076,16 @@ public partial class HtmlDocument
     private void FixNestedTag(string? name, string[]? resetters)
     {
         if (resetters is null)
+        {
             return;
+        }
 
         HtmlNode? prev = Utilities.GetDictionaryValueOrDefault(Lastnodes, _currentnode!.Name);
         // if we find a previous unclosed same name node, without a resetter node between, we must close it
-        if (prev is null || (Lastnodes[name!].Closed)) return;
+        if (prev is null || Lastnodes[name!].Closed)
+        {
+            return;
+        }
         // try to find a resetter node, if found, we do nothing
         if (FindResetterNodes(prev, resetters!))
         {
@@ -1160,7 +1103,9 @@ public partial class HtmlDocument
     {
         // we are only interested by start tags, not closing tags
         if (!_currentnode!._starttag)
+        {
             return;
+        }
 
         string? name = CurrentNodeName();
         FixNestedTag(name, GetResetters(name));
@@ -1169,19 +1114,14 @@ public partial class HtmlDocument
     private static string[]? GetResetters(string? name)
     {
 
-        if (!HtmlResetters.TryGetValue(name!, out string[]? resetters))
-        {
-            return null;
-        }
-
-        return resetters;
+        return !HtmlResetters.TryGetValue(name!, out string[]? resetters) ? null : resetters;
     }
 
     private void IncrementPosition()
     {
         // REVIEW: should we add some checksum code in DecrementPosition too?
 #pragma warning disable CS0612 // Type or member is obsolete
-        _crc32?.AddToCRC32(_c);
+        _ = (_crc32?.AddToCRC32(_c));
 #pragma warning restore CS0612 // Type or member is obsolete
 
         _index++;
@@ -1199,7 +1139,7 @@ public partial class HtmlDocument
 
     private bool IsValidTag()
     {
-        bool isValidTag = _c == '<' && _index < Text?.Length && (Char.IsLetter(Text[_index]) || Text[_index] == '/' || Text[_index] == '?' || Text[_index] == '!' || Text[_index] == '%');
+        bool isValidTag = _c == '<' && _index < Text?.Length && (char.IsLetter(Text[_index]) || Text[_index] == '/' || Text[_index] == '?' || Text[_index] == '!' || Text[_index] == '%');
         return isValidTag;
     }
 
@@ -1251,7 +1191,7 @@ public partial class HtmlDocument
         _state = ParseState.WhichTag;
         if ((_index - 1) <= (Text!.Length - 2))
         {
-            if (Text[_index] == '!' || Text[_index] == '?')
+            if (Text[_index] is '!' or '?')
             {
                 if (OptionTreatCDataBlockAsComment && Text[_index..].StartsWith("![CDATA[", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1272,15 +1212,8 @@ public partial class HtmlDocument
                     _state = ParseState.Comment;
                     if (_index < (Text.Length - 2))
                     {
-                        if ((Text[_index + 1] == '-') &&
-                            (Text[_index + 2] == '-'))
-                        {
-                            _fullcomment = true;
-                        }
-                        else
-                        {
-                            _fullcomment = false;
-                        }
+                        _fullcomment = (Text[_index + 1] == '-') &&
+                            (Text[_index + 2] == '-');
                     }
 
                     return true;
@@ -1316,11 +1249,11 @@ public partial class HtmlDocument
 
         _state = ParseState.Text;
         _oldstate = _state;
-        _documentnode._innerlength = Text!.Length;
-        _documentnode._outerlength = Text.Length;
-        _remainderOffset = Text.Length;
+        DocumentNode._innerlength = Text!.Length;
+        DocumentNode._outerlength = Text.Length;
+        RemainderOffset = Text.Length;
 
-        _lastparentnode = _documentnode;
+        _lastparentnode = DocumentNode;
         _currentnode = CreateNode(HtmlNodeType.Text, 0);
         _currentattribute = null;
 
@@ -1338,12 +1271,18 @@ public partial class HtmlDocument
             {
                 case ParseState.Text:
                     if (NewCheck())
+                    {
                         continue;
+                    }
+
                     break;
 
                 case ParseState.WhichTag:
                     if (NewCheck())
+                    {
                         continue;
+                    }
+
                     if (_c == '/')
                     {
                         PushNodeNameStart(false, _index);
@@ -1359,14 +1298,20 @@ public partial class HtmlDocument
 
                 case ParseState.Tag:
                     if (NewCheck())
+                    {
                         continue;
+                    }
+
                     if (IsWhiteSpace(_c))
                     {
                         CloseParentImplicitExplicitNode();
 
                         PushNodeNameEnd(_index - 1);
                         if (_state != ParseState.Tag)
+                        {
                             continue;
+                        }
+
                         _state = ParseState.BetweenAttributes;
                         continue;
                     }
@@ -1377,7 +1322,10 @@ public partial class HtmlDocument
 
                         PushNodeNameEnd(_index - 1);
                         if (_state != ParseState.Tag)
+                        {
                             continue;
+                        }
+
                         _state = ParseState.EmptyTag;
                         continue;
                     }
@@ -1396,7 +1344,10 @@ public partial class HtmlDocument
 
                         PushNodeNameEnd(_index - 1);
                         if (_state != ParseState.Tag)
+                        {
                             continue;
+                        }
+
                         if (!PushNodeEnd(_index, false))
                         {
                             // stop parsing
@@ -1405,7 +1356,10 @@ public partial class HtmlDocument
                         }
 
                         if (_state != ParseState.Tag)
+                        {
                             continue;
+                        }
+
                         _state = ParseState.Text;
                         PushNodeStart(HtmlNodeType.Text, _index, _lineposition);
                     }
@@ -1414,12 +1368,16 @@ public partial class HtmlDocument
 
                 case ParseState.BetweenAttributes:
                     if (NewCheck())
+                    {
                         continue;
+                    }
 
                     if (IsWhiteSpace(_c))
+                    {
                         continue;
+                    }
 
-                    if ((_c == '/') || (_c == '?'))
+                    if (_c is '/' or '?')
                     {
                         _state = ParseState.EmptyTag;
                         continue;
@@ -1435,7 +1393,10 @@ public partial class HtmlDocument
                         }
 
                         if (_state != ParseState.BetweenAttributes)
+                        {
                             continue;
+                        }
+
                         _state = ParseState.Text;
                         PushNodeStart(HtmlNodeType.Text, _index, _lineposition);
                         continue;
@@ -1447,7 +1408,9 @@ public partial class HtmlDocument
 
                 case ParseState.EmptyTag:
                     if (NewCheck())
+                    {
                         continue;
+                    }
 
                     if (_c == '>')
                     {
@@ -1459,7 +1422,10 @@ public partial class HtmlDocument
                         }
 
                         if (_state != ParseState.EmptyTag)
+                        {
                             continue;
+                        }
+
                         _state = ParseState.Text;
                         PushNodeStart(HtmlNodeType.Text, _index, _lineposition);
                         continue;
@@ -1483,7 +1449,9 @@ public partial class HtmlDocument
 
                 case ParseState.AttributeName:
                     if (NewCheck())
+                    {
                         continue;
+                    }
 
                     //_currentattribute._isFromParse = true;
 
@@ -1522,7 +1490,10 @@ public partial class HtmlDocument
                         }
 
                         if (_state != ParseState.AttributeName)
+                        {
                             continue;
+                        }
+
                         _state = ParseState.Text;
                         PushNodeStart(HtmlNodeType.Text, _index, _lineposition);
                         continue;
@@ -1532,10 +1503,15 @@ public partial class HtmlDocument
 
                 case ParseState.AttributeBeforeEquals:
                     if (NewCheck())
+                    {
                         continue;
+                    }
 
                     if (IsWhiteSpace(_c))
+                    {
                         continue;
+                    }
+
                     if (_c == '>')
                     {
                         if (!PushNodeEnd(_index, false))
@@ -1546,7 +1522,10 @@ public partial class HtmlDocument
                         }
 
                         if (_state != ParseState.AttributeBeforeEquals)
+                        {
                             continue;
+                        }
+
                         _state = ParseState.Text;
                         PushNodeStart(HtmlNodeType.Text, _index, _lineposition);
                         continue;
@@ -1565,12 +1544,16 @@ public partial class HtmlDocument
 
                 case ParseState.AttributeAfterEquals:
                     if (NewCheck())
+                    {
                         continue;
+                    }
 
                     if (IsWhiteSpace(_c))
+                    {
                         continue;
+                    }
 
-                    if ((_c == '\'') || (_c == '"'))
+                    if (_c is '\'' or '"')
                     {
                         _state = ParseState.QuotedAttributeValue;
                         PushAttributeValueStart(_index, _c);
@@ -1588,7 +1571,10 @@ public partial class HtmlDocument
                         }
 
                         if (_state != ParseState.AttributeAfterEquals)
+                        {
                             continue;
+                        }
+
                         _state = ParseState.Text;
                         PushNodeStart(HtmlNodeType.Text, _index, _lineposition);
                         continue;
@@ -1600,7 +1586,9 @@ public partial class HtmlDocument
 
                 case ParseState.AttributeValue:
                     if (NewCheck())
+                    {
                         continue;
+                    }
 
                     if (IsWhiteSpace(_c))
                     {
@@ -1620,7 +1608,10 @@ public partial class HtmlDocument
                         }
 
                         if (_state != ParseState.AttributeValue)
+                        {
                             continue;
+                        }
+
                         _state = ParseState.Text;
                         PushNodeStart(HtmlNodeType.Text, _index, _lineposition);
                         continue;
@@ -1738,8 +1729,8 @@ public partial class HtmlDocument
                     // check buffer end
                     if ((_currentnode._namelength + 3) <= (Text.Length - (_index - 1)))
                     {
-                        var tagStartMatching = Text[_index - 1] == '<' && Text[_index] == '/';
-                        var tagMatching = tagStartMatching && string.Compare(
+                        bool tagStartMatching = Text[_index - 1] == '<' && Text[_index] == '/';
+                        bool tagMatching = tagStartMatching && string.Compare(
                                 Text,
                                 _index + 1,
                                 _currentnode.Name,
@@ -1750,7 +1741,7 @@ public partial class HtmlDocument
                         if (tagMatching)
                         {
                             int c = Text[_index - 1 + 2 + _currentnode.Name.Length];
-                            if ((c == '>') || (IsWhiteSpace(c)))
+                            if ((c == '>') || IsWhiteSpace(c))
                             {
                                 // add the script as a text node
                                 HtmlNode script = CreateNode(HtmlNodeType.Text,
@@ -1804,11 +1795,11 @@ public partial class HtmlDocument
 
     private void PushAttributeNameEnd(int index)
     {
-        _currentattribute?._namelength = index - _currentattribute._namestartindex;
+        _ = (_currentattribute?._namelength = index - _currentattribute._namestartindex);
 
         if (_currentattribute?.Name is not null && !BlockAttributes.Contains(_currentattribute.Name))
         {
-            _currentnode?.Attributes?.Append(_currentattribute);
+            _ = (_currentnode?.Attributes?.Append(_currentattribute));
         }
     }
 
@@ -1824,7 +1815,7 @@ public partial class HtmlDocument
 
     private void PushAttributeValueEnd(int index)
     {
-        _currentattribute?._valuelength = index - _currentattribute._valuestartindex;
+        _ = (_currentattribute?._valuelength = index - _currentattribute._valuestartindex);
     }
 
     private void PushAttributeValueStart(int index)
@@ -1867,12 +1858,15 @@ public partial class HtmlDocument
     private bool IsParentImplicitEnd()
     {
         // MUST be a start tag
-        if (!_currentnode!._starttag) return false;
+        if (!_currentnode!._starttag)
+        {
+            return false;
+        }
 
         bool isImplicitEnd = false;
 
-        var parent = _lastparentnode?.Name;
-        var nodeName = Text?.Substring(_currentnode._namestartindex, _index - _currentnode._namestartindex - 1).ToLowerInvariant();
+        string? parent = _lastparentnode?.Name;
+        string? nodeName = Text?.Substring(_currentnode._namestartindex, _index - _currentnode._namestartindex - 1).ToLowerInvariant();
 
         switch (parent)
         {
@@ -1880,49 +1874,44 @@ public partial class HtmlDocument
                 isImplicitEnd = nodeName == "a";
                 break;
             case "dd":
-                isImplicitEnd = nodeName == "dt" || nodeName == "dd";
+                isImplicitEnd = nodeName is "dt" or "dd";
                 break;
             case "dt":
-                isImplicitEnd = nodeName == "dt" || nodeName == "dd";
+                isImplicitEnd = nodeName is "dt" or "dd";
                 break;
             case "li":
                 isImplicitEnd = nodeName == "li";
                 break;
             case "p":
-                if (DisableBehaviorTagP)
-                {
-                    isImplicitEnd = nodeName == "address"
-                                    || nodeName == "article"
-                                    || nodeName == "aside"
-                                    || nodeName == "blockquote"
-                                    || nodeName == "dir"
-                                    || nodeName == "div"
-                                    || nodeName == "dl"
-                                    || nodeName == "fieldset"
-                                    || nodeName == "footer"
-                                    || nodeName == "form"
-                                    || nodeName == "h1"
-                                    || nodeName == "h2"
-                                    || nodeName == "h3"
-                                    || nodeName == "h4"
-                                    || nodeName == "h5"
-                                    || nodeName == "h6"
-                                    || nodeName == "header"
-                                    || nodeName == "hr"
-                                    || nodeName == "li"
-                                    || nodeName == "menu"
-                                    || nodeName == "nav"
-                                    || nodeName == "ol"
-                                    || nodeName == "p"
-                                    || nodeName == "pre"
-                                    || nodeName == "section"
-                                    || nodeName == "table"
-                                    || nodeName == "ul";
-                }
-                else
-                {
-                    isImplicitEnd = nodeName == "p";
-                }
+                isImplicitEnd = DisableBehaviorTagP
+                    ? nodeName is "address"
+                                    or "article"
+                                    or "aside"
+                                    or "blockquote"
+                                    or "dir"
+                                    or "div"
+                                    or "dl"
+                                    or "fieldset"
+                                    or "footer"
+                                    or "form"
+                                    or "h1"
+                                    or "h2"
+                                    or "h3"
+                                    or "h4"
+                                    or "h5"
+                                    or "h6"
+                                    or "header"
+                                    or "hr"
+                                    or "li"
+                                    or "menu"
+                                    or "nav"
+                                    or "ol"
+                                    or "p"
+                                    or "pre"
+                                    or "section"
+                                    or "table"
+                                    or "ul"
+                    : nodeName == "p";
 
                 break;
             case "option":
@@ -1936,12 +1925,15 @@ public partial class HtmlDocument
     private bool IsParentExplicitEnd()
     {
         // MUST be a start tag
-        if (!_currentnode!._starttag) return false;
+        if (!_currentnode!._starttag)
+        {
+            return false;
+        }
 
         bool isExplicitEnd = false;
 
-        var parent = _lastparentnode?.Name;
-        var nodeName = Text?.Substring(_currentnode._namestartindex, _index - _currentnode._namestartindex - 1).ToLowerInvariant();
+        string? parent = _lastparentnode?.Name;
+        string? nodeName = Text?.Substring(_currentnode._namestartindex, _index - _currentnode._namestartindex - 1).ToLowerInvariant();
 
         switch (parent)
         {
@@ -1955,40 +1947,40 @@ public partial class HtmlDocument
                 isExplicitEnd = nodeName == "table";
                 break;
             case "tr":
-                isExplicitEnd = nodeName == "tr" || nodeName == "thead" || nodeName == "tbody" || nodeName == "tfoot";
+                isExplicitEnd = nodeName is "tr" or "thead" or "tbody" or "tfoot";
                 break;
             case "thead":
-                isExplicitEnd = nodeName == "tbody" || nodeName == "tfoot";
+                isExplicitEnd = nodeName is "tbody" or "tfoot";
                 break;
             case "tbody":
-                isExplicitEnd = nodeName == "tbody" || nodeName == "tfoot";
+                isExplicitEnd = nodeName is "tbody" or "tfoot";
                 break;
             case "caption":
-                isExplicitEnd = nodeName == "tr" || nodeName == "thead" || nodeName == "tbody" || nodeName == "tfoot" || nodeName == "colgroup";
+                isExplicitEnd = nodeName is "tr" or "thead" or "tbody" or "tfoot" or "colgroup";
                 break;
             case "colgroup":
-                isExplicitEnd = nodeName == "tr" || nodeName == "thead" || nodeName == "tbody" || nodeName == "tfoot";
+                isExplicitEnd = nodeName is "tr" or "thead" or "tbody" or "tfoot";
                 break;
             case "td":
-                isExplicitEnd = nodeName == "td" || nodeName == "th" || nodeName == "tr" || nodeName == "tbody" || nodeName == "tfoot";
+                isExplicitEnd = nodeName is "td" or "th" or "tr" or "tbody" or "tfoot";
                 break;
             case "th":
-                isExplicitEnd = nodeName == "td" || nodeName == "th" || nodeName == "tr" || nodeName == "tbody" || nodeName == "tfoot";
+                isExplicitEnd = nodeName is "td" or "th" or "tr" or "tbody" or "tfoot";
                 break;
             case "h1":
-                isExplicitEnd = nodeName == "h2" || nodeName == "h3" || nodeName == "h4" || nodeName == "h5";
+                isExplicitEnd = nodeName is "h2" or "h3" or "h4" or "h5";
                 break;
             case "h2":
-                isExplicitEnd = nodeName == "h1" || nodeName == "h3" || nodeName == "h4" || nodeName == "h5";
+                isExplicitEnd = nodeName is "h1" or "h3" or "h4" or "h5";
                 break;
             case "h3":
-                isExplicitEnd = nodeName == "h1" || nodeName == "h2" || nodeName == "h4" || nodeName == "h5";
+                isExplicitEnd = nodeName is "h1" or "h2" or "h4" or "h5";
                 break;
             case "h4":
-                isExplicitEnd = nodeName == "h1" || nodeName == "h2" || nodeName == "h3" || nodeName == "h5";
+                isExplicitEnd = nodeName is "h1" or "h2" or "h3" or "h5";
                 break;
             case "h5":
-                isExplicitEnd = nodeName == "h1" || nodeName == "h2" || nodeName == "h3" || nodeName == "h4";
+                isExplicitEnd = nodeName is "h1" or "h2" or "h3" or "h4";
                 break;
         }
 
@@ -2045,43 +2037,43 @@ public partial class HtmlDocument
 
     private void PushAttributeValueStart(int index, int quote)
     {
-        _currentattribute?._valuestartindex = index;
+        _ = (_currentattribute?._valuestartindex = index);
         if (quote == '\'')
         {
-            _currentattribute?.InternalQuoteType = AttributeValueQuote.SingleQuote;
+            _ = (_currentattribute?.InternalQuoteType = AttributeValueQuote.SingleQuote);
         }
         if (quote == '"')
         {
-            _currentattribute?.InternalQuoteType = AttributeValueQuote.DoubleQuote;
+            _ = (_currentattribute?.InternalQuoteType = AttributeValueQuote.DoubleQuote);
         }
 
         if (quote == 0)
         {
-            _currentattribute?.InternalQuoteType = AttributeValueQuote.None;
+            _ = (_currentattribute?.InternalQuoteType = AttributeValueQuote.None);
         }
     }
 
     private bool PushNodeEnd(int index, bool close)
     {
-        _currentnode?._outerlength = index - _currentnode._outerstartindex;
+        _ = (_currentnode?._outerlength = index - _currentnode._outerstartindex);
 
-        if ((_currentnode?._nodetype == HtmlNodeType.Text) ||
-            (_currentnode?._nodetype == HtmlNodeType.Comment))
+        if (_currentnode?._nodetype is HtmlNodeType.Text or
+            HtmlNodeType.Comment)
         {
             // forget about void nodes
             if (_currentnode._outerlength > 0)
             {
                 _currentnode._innerlength = _currentnode._outerlength;
                 _currentnode._innerstartindex = _currentnode._outerstartindex;
-                _lastparentnode?.AppendChild(_currentnode);
+                _ = (_lastparentnode?.AppendChild(_currentnode));
             }
         }
         else
         {
-            if ((_currentnode!._starttag) && (_lastparentnode != _currentnode))
+            if (_currentnode!._starttag && (_lastparentnode != _currentnode))
             {
                 // add to parent node
-                _lastparentnode?.AppendChild(_currentnode);
+                _ = (_lastparentnode?.AppendChild(_currentnode));
 
                 ReadDocumentEncoding(_currentnode);
 
@@ -2092,8 +2084,8 @@ public partial class HtmlDocument
                 Lastnodes[_currentnode.Name] = _currentnode;
 
                 // change parent?
-                if ((_currentnode.NodeType == HtmlNodeType.Document) ||
-                    (_currentnode.NodeType == HtmlNodeType.Element))
+                if (_currentnode.NodeType is HtmlNodeType.Document or
+                    HtmlNodeType.Element)
                 {
                     _lastparentnode = _currentnode;
                 }
@@ -2104,21 +2096,21 @@ public partial class HtmlDocument
                     return true;
                 }
 
-                if ((HtmlNode.IsClosedElement(_currentnode.Name)) ||
-                    (HtmlNode.IsEmptyElement(_currentnode.Name)))
+                if (HtmlNode.IsClosedElement(_currentnode.Name) ||
+                    HtmlNode.IsEmptyElement(_currentnode.Name))
                 {
                     close = true;
                 }
             }
         }
 
-        if ((close) || (!_currentnode._starttag))
+        if (close || (!_currentnode._starttag))
         {
-            if ((OptionStopperNodeName is not null) && (_remainder is null) &&
+            if ((OptionStopperNodeName is not null) && (Remainder is null) &&
                 string.Equals(_currentnode.Name, OptionStopperNodeName, StringComparison.OrdinalIgnoreCase))
             {
-                _remainderOffset = index;
-                _remainder = Text?[_remainderOffset..];
+                RemainderOffset = index;
+                Remainder = Text?[RemainderOffset..];
                 CloseCurrentNode();
                 return false; // stop parsing
             }
@@ -2131,7 +2123,7 @@ public partial class HtmlDocument
 
     private void PushNodeNameEnd(int index)
     {
-        _currentnode?._namelength = index - _currentnode._namestartindex;
+        _ = (_currentnode?._namelength = index - _currentnode._namestartindex);
         if (OptionFixNestedTags)
         {
             FixNestedTags();
@@ -2140,8 +2132,8 @@ public partial class HtmlDocument
 
     private void PushNodeNameStart(bool starttag, int index)
     {
-        _currentnode?._starttag = starttag;
-        _currentnode?._namestartindex = index;
+        _ = (_currentnode?._starttag = starttag);
+        _ = (_currentnode?._namestartindex = index);
     }
 
     private void PushNodeStart(HtmlNodeType type, int index, int lineposition)
@@ -2155,58 +2147,76 @@ public partial class HtmlDocument
     private void ReadDocumentEncoding(HtmlNode node)
     {
         if (!OptionReadEncoding)
+        {
             return;
+        }
         // format is 
         // <meta http-equiv="content-type" content="text/html;charset=iso-8859-1" />
 
         // when we append a child, we are in node end, so attributes are already populated
         if (node._namelength != 4) // quick check, avoids string alloc
+        {
             return;
+        }
+
         if (node.Name != "meta") // all nodes names are lowercase
+        {
             return;
+        }
+
         string? charset = null;
         HtmlAttribute? att = node.Attributes?["http-equiv"];
         if (att is not null)
         {
             if (!string.Equals(att.Value, "content-type", StringComparison.OrdinalIgnoreCase))
+            {
                 return;
+            }
+
             HtmlAttribute? content = node.Attributes?["content"];
             if (content is not null)
+            {
                 charset = NameValuePairList.GetNameValuePairsValue(content.Value, "charset");
+            }
         }
         else
         {
             att = node?.Attributes?["charset"];
             if (att is not null)
+            {
                 charset = att.Value;
+            }
         }
 
         if (!string.IsNullOrEmpty(charset))
         {
             // The following check fixes the the bug described at: http://htmlagilitypack.codeplex.com/WorkItem/View.aspx?WorkItemId=25273
             if (string.Equals(charset, "utf8", StringComparison.OrdinalIgnoreCase))
+            {
                 charset = "utf-8";
+            }
+
             try
             {
-                _declaredencoding = Encoding.GetEncoding(charset);
+                DeclaredEncoding = Encoding.GetEncoding(charset);
             }
             catch (ArgumentException)
             {
-                _declaredencoding = null;
+                DeclaredEncoding = null;
             }
 
-            if (_onlyDetectEncoding && _declaredencoding is not null)
+            if (_onlyDetectEncoding && DeclaredEncoding is not null)
             {
-                throw new EncodingFoundException(_declaredencoding);
+                throw new EncodingFoundException(DeclaredEncoding);
             }
 
-            if (_streamencoding is not null)
+            if (StreamEncoding is not null)
             {
 #if SILVERLIGHT || PocketPC || METRO || NETSTANDARD1_3 || NETSTANDARD1_6
                 if (_declaredencoding.WebName != _streamencoding.WebName)
 #else
-                if (_declaredencoding is not null)
-                    if (_declaredencoding.CodePage != _streamencoding.CodePage)
+                if (DeclaredEncoding is not null)
+                    if (DeclaredEncoding.CodePage != StreamEncoding.CodePage)
 #endif
                     {
                         AddError(
@@ -2214,8 +2224,8 @@ public partial class HtmlDocument
                             _line, _lineposition,
                             _index, node?.OuterHtml,
                             "Encoding mismatch between StreamEncoding: " +
-                            _streamencoding.WebName + " and DeclaredEncoding: " +
-                            _declaredencoding.WebName);
+                            StreamEncoding.WebName + " and DeclaredEncoding: " +
+                            DeclaredEncoding.WebName);
                     }
             }
         }

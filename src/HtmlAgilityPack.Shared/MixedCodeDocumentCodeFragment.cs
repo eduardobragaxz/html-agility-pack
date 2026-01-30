@@ -15,7 +15,6 @@ public class MixedCodeDocumentCodeFragment : MixedCodeDocumentFragment
 {
     #region Fields
 
-    private string? _code;
 
     #endregion
 
@@ -38,20 +37,20 @@ public class MixedCodeDocumentCodeFragment : MixedCodeDocumentFragment
     {
         get
         {
-            if (_code is null)
+            if (field is null)
             {
-                _code = FragmentText?.Substring(Doc.TokenCodeStart.Length,
+                field = FragmentText?.Substring(Doc.TokenCodeStart.Length,
                     FragmentText.Length - Doc.TokenCodeEnd.Length -
                     Doc.TokenCodeStart.Length - 1).Trim();
-                if (_code!.StartsWith('='))
+                if (field!.StartsWith('='))
                 {
-                    _code = string.Concat(Doc.TokenResponseWrite, _code.AsSpan(1, _code.Length - 1));
+                    field = string.Concat(Doc.TokenResponseWrite, field.AsSpan(1, field.Length - 1));
                 }
             }
 
-            return _code;
+            return field;
         }
-        set { _code = value; }
+        set;
     }
 
     #endregion

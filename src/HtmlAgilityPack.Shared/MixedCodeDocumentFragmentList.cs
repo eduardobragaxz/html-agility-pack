@@ -18,7 +18,6 @@ public class MixedCodeDocumentFragmentList : IEnumerable
 {
     #region Fields
 
-    private readonly MixedCodeDocument _doc;
     private readonly List<MixedCodeDocumentFragment> _items = [];
 
     #endregion
@@ -27,7 +26,7 @@ public class MixedCodeDocumentFragmentList : IEnumerable
 
     internal MixedCodeDocumentFragmentList(MixedCodeDocument doc)
     {
-        _doc = doc;
+        Doc = doc;
     }
 
     #endregion
@@ -37,26 +36,17 @@ public class MixedCodeDocumentFragmentList : IEnumerable
     ///<summary>
     /// Gets the Document
     ///</summary>
-    public MixedCodeDocument Doc
-    {
-        get { return _doc; }
-    }
+    public MixedCodeDocument Doc { get; }
 
     /// <summary>
     /// Gets the number of fragments contained in the list.
     /// </summary>
-    public int Count
-    {
-        get { return _items.Count; }
-    }
+    public int Count => _items.Count;
 
     /// <summary>
     /// Gets a fragment from the list using its index.
     /// </summary>
-    public MixedCodeDocumentFragment this[int index]
-    {
-        get { return _items[index]; }
-    }
+    public MixedCodeDocumentFragment this[int index] => _items[index];
 
     #endregion
 
@@ -154,7 +144,7 @@ public class MixedCodeDocumentFragmentList : IEnumerable
 
         for (int i = 0; i < _items.Count; i++)
         {
-            if ((_items[i]) == fragment)
+            if (_items[i] == fragment)
             {
                 return i;
             }
@@ -194,10 +184,7 @@ public class MixedCodeDocumentFragmentList : IEnumerable
         /// <summary>
         /// Gets the current element in the collection.
         /// </summary>
-        public MixedCodeDocumentFragment Current
-        {
-            get { return (MixedCodeDocumentFragment)(_items[_index]); }
-        }
+        public MixedCodeDocumentFragment Current => _items[_index];
 
         #endregion
 
@@ -206,10 +193,7 @@ public class MixedCodeDocumentFragmentList : IEnumerable
         /// <summary>
         /// Gets the current element in the collection.
         /// </summary>
-        object IEnumerator.Current
-        {
-            get { return (Current); }
-        }
+        object IEnumerator.Current => Current;
 
         /// <summary>
         /// Advances the enumerator to the next element of the collection.
@@ -218,7 +202,7 @@ public class MixedCodeDocumentFragmentList : IEnumerable
         public bool MoveNext()
         {
             _index++;
-            return (_index < _items.Count);
+            return _index < _items.Count;
         }
 
         /// <summary>
