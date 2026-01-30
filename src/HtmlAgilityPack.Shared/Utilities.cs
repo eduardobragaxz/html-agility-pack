@@ -11,13 +11,15 @@ namespace HtmlAgilityPack;
 
 internal static class Utilities
 {
-    public static TValue? GetDictionaryValueOrDefault<TKey, TValue>(Dictionary<TKey, TValue> dict, TKey key, TValue? defaultValue = default) where TKey : class
+    public static TValue? GetDictionaryValueOrDefault<TKey, TValue>(Dictionary<TKey, TValue> dict, TKey key, TValue? defaultValue = default(TValue)) where TKey : class
     {
-        return !dict.TryGetValue(key, out TValue? value) ? defaultValue : value;
+        if (!dict.TryGetValue(key, out TValue? value))
+            return defaultValue;
+        return value;
     }
 
 #if !(METRO || NETSTANDARD1_3 || NETSTANDARD1_6)
-    internal static object? To(this object @this, Type type)
+    internal static object? To(this Object @this, Type type)
     {
         if (@this is not null)
         {

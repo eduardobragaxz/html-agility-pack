@@ -35,7 +35,16 @@ public class HtmlCommentNode : HtmlNode
     /// </summary>
     public string? Comment
     {
-        get => _comment is null ? base.InnerHtml : _comment; set => _comment = value;
+        get
+        {
+            if (_comment is null)
+            {
+                return base.InnerHtml;
+            }
+
+            return _comment;
+        }
+        set { _comment = value; }
     }
 
     /// <summary>
@@ -43,15 +52,38 @@ public class HtmlCommentNode : HtmlNode
     /// </summary>
     public override string? InnerHtml
     {
-        get => _comment is null ? base.InnerHtml : _comment; set => _comment = value;
+        get
+        {
+            if (_comment is null)
+            {
+                return base.InnerHtml;
+            }
+
+            return _comment;
+        }
+        set { _comment = value; }
     }
 
     /// <summary>
     /// Gets or Sets the object and its content in HTML.
     /// </summary>
-    public override string? OuterHtml => _comment is null
-                ? base.OuterHtml
-                : _comment.StartsWith("<!--") && _comment.EndsWith("-->") ? _comment : "<!--" + _comment + "-->";
+    public override string? OuterHtml
+    {
+        get
+        {
+            if (_comment is null)
+            {
+                return base.OuterHtml;
+            }
+
+            if (_comment.StartsWith("<!--") && _comment.EndsWith("-->"))
+            {
+                return _comment;
+            }
+
+            return "<!--" + _comment + "-->";
+        }
+    }
 
     #endregion
 }

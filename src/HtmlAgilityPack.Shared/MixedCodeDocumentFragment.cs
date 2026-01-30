@@ -16,8 +16,10 @@ public abstract class MixedCodeDocumentFragment
     #region Fields
 
     internal MixedCodeDocument Doc;
+    private string? _fragmentText;
     internal int Index;
     internal int Length;
+    private int _line;
     internal int _lineposition;
     internal MixedCodeDocumentFragmentType _type;
 
@@ -54,32 +56,45 @@ public abstract class MixedCodeDocumentFragment
     {
         get
         {
-            field ??= Doc._text?.Substring(Index, Length);
+            _fragmentText ??= Doc._text?.Substring(Index, Length);
 
-            return field;
+            return _fragmentText;
         }
-        internal set;
+        internal set { _fragmentText = value; }
     }
 
     /// <summary>
     /// Gets the type of fragment.
     /// </summary>
-    public MixedCodeDocumentFragmentType FragmentType => _type;
+    public MixedCodeDocumentFragmentType FragmentType
+    {
+        get { return _type; }
+    }
 
     /// <summary>
     /// Gets the line number of the fragment.
     /// </summary>
-    public int Line { get; internal set; }
+    public int Line
+    {
+        get { return _line; }
+        internal set { _line = value; }
+    }
 
     /// <summary>
     /// Gets the line position (column) of the fragment.
     /// </summary>
-    public int LinePosition => _lineposition;
+    public int LinePosition
+    {
+        get { return _lineposition; }
+    }
 
     /// <summary>
     /// Gets the fragment position in the document's stream.
     /// </summary>
-    public int StreamPosition => Index;
+    public int StreamPosition
+    {
+        get { return Index; }
+    }
 
     #endregion
 }

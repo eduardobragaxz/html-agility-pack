@@ -35,20 +35,40 @@ public class HtmlTextNode : HtmlNode
     /// </summary>
     public override string? InnerHtml
     {
-        get => OuterHtml; set => _text = value;
+        get { return OuterHtml; }
+        set { _text = value; }
     }
 
     /// <summary>
     /// Gets or Sets the object and its content in HTML.
     /// </summary>
-    public override string OuterHtml => _text is null ? base.OuterHtml! : _text;
+    public override string OuterHtml
+    {
+        get
+        {
+            if (_text is null)
+            {
+                return base.OuterHtml!;
+            }
+
+            return _text;
+        }
+    }
 
     /// <summary>
     /// Gets or Sets the text of the node.
     /// </summary>
     public string? Text
     {
-        get => _text is null ? base.OuterHtml : _text;
+        get
+        {
+            if (_text is null)
+            {
+                return base.OuterHtml;
+            }
+
+            return _text;
+        }
         set
         {
             _text = value;

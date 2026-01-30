@@ -26,6 +26,7 @@ public class MixedCodeDocument
     private int _line;
     private int _lineposition;
     private ParseState _state;
+    private Encoding? _streamencoding;
     internal string? _text;
     internal MixedCodeDocumentFragmentList _textfragments;
 
@@ -48,6 +49,9 @@ public class MixedCodeDocument
     /// Gets or sets the token representing response write directive.
     /// </summary>
     public string TokenResponseWrite = "Response.Write ";
+
+
+    private readonly string TokenTextBlock = "TextBlock({0})";
 
     #endregion
 
@@ -81,7 +85,7 @@ public class MixedCodeDocument
                 switch (frag._type)
                 {
                     case MixedCodeDocumentFragmentType.Text:
-                        s += TokenResponseWrite + string.Format(field, i) + "\n";
+                        s += TokenResponseWrite + string.Format(TokenTextBlock, i) + "\n";
                         i++;
                         break;
 
@@ -93,27 +97,39 @@ public class MixedCodeDocument
 
             return s;
         }
-    } = "TextBlock({0})";
+    }
 
     /// <summary>
     /// Gets the list of code fragments in the document.
     /// </summary>
-    public MixedCodeDocumentFragmentList CodeFragments => _codefragments;
+    public MixedCodeDocumentFragmentList CodeFragments
+    {
+        get { return _codefragments; }
+    }
 
     /// <summary>
     /// Gets the list of all fragments in the document.
     /// </summary>
-    public MixedCodeDocumentFragmentList Fragments => _fragments;
+    public MixedCodeDocumentFragmentList Fragments
+    {
+        get { return _fragments; }
+    }
 
     /// <summary>
     /// Gets the encoding of the stream used to read the document.
     /// </summary>
-    public Encoding? StreamEncoding { get; private set; }
+    public Encoding? StreamEncoding
+    {
+        get { return _streamencoding; }
+    }
 
     /// <summary>
     /// Gets the list of text fragments in the document.
     /// </summary>
-    public MixedCodeDocumentFragmentList TextFragments => _textfragments;
+    public MixedCodeDocumentFragmentList TextFragments
+    {
+        get { return _textfragments; }
+    }
 
     #endregion
 
@@ -275,7 +291,7 @@ public class MixedCodeDocument
         {
             if (sr is not null)
             {
-                StreamEncoding = sr.CurrentEncoding;
+                _streamencoding = sr.CurrentEncoding;
             }
 
             _text = reader.ReadToEnd();
@@ -377,7 +393,9 @@ public class MixedCodeDocument
 
     internal Encoding GetOutEncoding()
     {
-        return StreamEncoding is not null ? StreamEncoding : Encoding.UTF8;
+        if (_streamencoding is not null)
+            return _streamencoding;
+        return Encoding.UTF8;
     }
 
     #endregion
@@ -393,9 +411,7 @@ public class MixedCodeDocument
             _line++;
         }
         else
-        {
             _lineposition++;
-        }
     }
 
     private void Parse()
@@ -450,10 +466,10 @@ public class MixedCodeDocument
 
     private void SetPosition()
     {
-        _ = (_currentfragment?.Line = _line);
-        _ = (_currentfragment?._lineposition = _lineposition);
-        _ = (_currentfragment?.Index = _index - 1);
-        _ = (_currentfragment?.Length = 0);
+        _currentfragment?.Line = _line;
+        _currentfragment?._lineposition = _lineposition;
+        _currentfragment?.Index = _index - 1;
+        _currentfragment?.Length = 0;
     }
 
     #endregion

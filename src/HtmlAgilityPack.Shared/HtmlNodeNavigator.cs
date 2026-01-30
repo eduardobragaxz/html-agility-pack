@@ -22,6 +22,8 @@ public class HtmlNodeNavigator : XPathNavigator
     #region Fields
 
     private int _attindex;
+    private HtmlNode? _currentnode;
+    private readonly HtmlDocument _doc;
     private readonly HtmlNameTable _nametable;
 
     internal bool Trace;
@@ -32,7 +34,7 @@ public class HtmlNodeNavigator : XPathNavigator
 
     internal HtmlNodeNavigator()
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
         Reset();
     }
@@ -50,10 +52,10 @@ public class HtmlNodeNavigator : XPathNavigator
             InternalTrace(null);
 #endif
 
-        CurrentDocument = doc ?? throw new Exception("Oops! The HtmlDocument cannot be null.");
+        _doc = doc ?? throw new Exception("Oops! The HtmlDocument cannot be null.");
         _nametable = new HtmlNameTable();
         Reset();
-        CurrentNode = currentNode;
+        _currentnode = currentNode;
     }
 
     private HtmlNodeNavigator(HtmlNodeNavigator nav)
@@ -62,8 +64,8 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
             InternalTrace(null);
 #endif
-        CurrentDocument = nav.CurrentDocument;
-        CurrentNode = nav.CurrentNode;
+        _doc = nav._doc;
+        _currentnode = nav._currentnode;
         _attindex = nav._attindex;
         _nametable = nav._nametable; // REVIEW: should we do this?
     }
@@ -74,9 +76,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="stream">The input stream.</param>
     public HtmlNodeNavigator(Stream stream)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(stream);
+        _doc.Load(stream);
         Reset();
     }
 
@@ -87,9 +89,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="detectEncodingFromByteOrderMarks">Indicates whether to look for byte order marks at the beginning of the stream.</param>
     public HtmlNodeNavigator(Stream stream, bool detectEncodingFromByteOrderMarks)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(stream, detectEncodingFromByteOrderMarks);
+        _doc.Load(stream, detectEncodingFromByteOrderMarks);
         Reset();
     }
 
@@ -100,9 +102,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="encoding">The character encoding to use.</param>
     public HtmlNodeNavigator(Stream stream, Encoding encoding)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(stream, encoding);
+        _doc.Load(stream, encoding);
         Reset();
     }
 
@@ -114,9 +116,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="detectEncodingFromByteOrderMarks">Indicates whether to look for byte order marks at the beginning of the stream.</param>
     public HtmlNodeNavigator(Stream stream, Encoding encoding, bool detectEncodingFromByteOrderMarks)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(stream, encoding, detectEncodingFromByteOrderMarks);
+        _doc.Load(stream, encoding, detectEncodingFromByteOrderMarks);
         Reset();
     }
 
@@ -129,9 +131,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="buffersize">The minimum buffer size.</param>
     public HtmlNodeNavigator(Stream stream, Encoding encoding, bool detectEncodingFromByteOrderMarks, int buffersize)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(stream, encoding, detectEncodingFromByteOrderMarks, buffersize);
+        _doc.Load(stream, encoding, detectEncodingFromByteOrderMarks, buffersize);
         Reset();
     }
 
@@ -141,9 +143,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="reader">The TextReader used to feed the HTML data into the document.</param>
     public HtmlNodeNavigator(TextReader reader)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(reader);
+        _doc.Load(reader);
         Reset();
     }
 
@@ -154,9 +156,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="path">The complete file path to be read.</param>
     public HtmlNodeNavigator(string path)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(path);
+        _doc.Load(path);
         Reset();
     }
 
@@ -167,9 +169,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="detectEncodingFromByteOrderMarks">Indicates whether to look for byte order marks at the beginning of the file.</param>
     public HtmlNodeNavigator(string path, bool detectEncodingFromByteOrderMarks)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(path, detectEncodingFromByteOrderMarks);
+        _doc.Load(path, detectEncodingFromByteOrderMarks);
         Reset();
     }
 
@@ -180,9 +182,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="encoding">The character encoding to use.</param>
     public HtmlNodeNavigator(string path, Encoding encoding)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(path, encoding);
+        _doc.Load(path, encoding);
         Reset();
     }
 
@@ -194,9 +196,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="detectEncodingFromByteOrderMarks">Indicates whether to look for byte order marks at the beginning of the file.</param>
     public HtmlNodeNavigator(string path, Encoding encoding, bool detectEncodingFromByteOrderMarks)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(path, encoding, detectEncodingFromByteOrderMarks);
+        _doc.Load(path, encoding, detectEncodingFromByteOrderMarks);
         Reset();
     }
 
@@ -209,9 +211,9 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <param name="buffersize">The minimum buffer size.</param>
     public HtmlNodeNavigator(string path, Encoding encoding, bool detectEncodingFromByteOrderMarks, int buffersize)
     {
-        CurrentDocument = new HtmlDocument();
+        _doc = new HtmlDocument();
         _nametable = new HtmlNameTable();
-        CurrentDocument.Load(path, encoding, detectEncodingFromByteOrderMarks, buffersize);
+        _doc.Load(path, encoding, detectEncodingFromByteOrderMarks, buffersize);
         Reset();
     }
 #endif
@@ -238,12 +240,18 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <summary>
     /// Gets the current HTML document.
     /// </summary>
-    public HtmlDocument CurrentDocument { get; }
+    public HtmlDocument CurrentDocument
+    {
+        get { return _doc; }
+    }
 
     /// <summary>
     /// Gets the current HTML node.
     /// </summary>
-    public HtmlNode? CurrentNode { get; private set; }
+    public HtmlNode? CurrentNode
+    {
+        get { return _currentnode; }
+    }
 
     /// <summary>
     /// Gets a value indicating whether the current node has child nodes.
@@ -255,7 +263,7 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
                 InternalTrace(">" + (_currentnode.Attributes.Count > 0));
 #endif
-            return CurrentNode?.Attributes?.Count > 0;
+            return (_currentnode?.Attributes?.Count > 0);
         }
     }
 
@@ -269,7 +277,7 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
                 InternalTrace(">" + (_currentnode.ChildNodes.Count > 0));
 #endif
-            return CurrentNode?.ChildNodes.Count > 0;
+            return (_currentnode?.ChildNodes.Count > 0);
         }
     }
 
@@ -300,13 +308,13 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
                     InternalTrace("att>" + _currentnode.Attributes[_attindex].Name);
 #endif
-                return _nametable.GetOrAdd(CurrentNode?.Attributes?[_attindex]?.Name!);
+                return _nametable.GetOrAdd(_currentnode?.Attributes?[_attindex]?.Name!);
             }
 
 #if TRACE_NAVIGATOR
                 InternalTrace("node>" + _currentnode.Name);
 #endif
-            return _nametable.GetOrAdd(CurrentNode?.Name!);
+            return _nametable.GetOrAdd(_currentnode?.Name!);
         }
     }
 
@@ -320,7 +328,7 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
                 InternalTrace(">" + _currentnode.Name);
 #endif
-            return _nametable.GetOrAdd(CurrentNode?.Name!);
+            return _nametable.GetOrAdd(_currentnode?.Name!);
         }
     }
 
@@ -360,7 +368,7 @@ public class HtmlNodeNavigator : XPathNavigator
     {
         get
         {
-            switch (CurrentNode?.NodeType)
+            switch (_currentnode?.NodeType)
             {
                 case HtmlNodeType.Comment:
 #if TRACE_NAVIGATOR
@@ -398,7 +406,7 @@ public class HtmlNodeNavigator : XPathNavigator
 
                 default:
                     throw new NotImplementedException("Internal error: Unhandled HtmlNodeType: " +
-                                                      CurrentNode?.NodeType);
+                                                      _currentnode?.NodeType);
             }
         }
     }
@@ -428,13 +436,13 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
                 InternalTrace("nt=" + _currentnode.NodeType);
 #endif
-            switch (CurrentNode?.NodeType)
+            switch (_currentnode?.NodeType)
             {
                 case HtmlNodeType.Comment:
 #if TRACE_NAVIGATOR
                         InternalTrace(">" + ((HtmlCommentNode) _currentnode).Comment);
 #endif
-                    return ((HtmlCommentNode)CurrentNode).Comment!;
+                    return ((HtmlCommentNode)_currentnode).Comment!;
 
                 case HtmlNodeType.Document:
 #if TRACE_NAVIGATOR
@@ -446,7 +454,7 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
                         InternalTrace(">" + ((HtmlTextNode) _currentnode).Text);
 #endif
-                    return ((HtmlTextNode)CurrentNode).Text!;
+                    return ((HtmlTextNode)_currentnode).Text!;
 
                 case HtmlNodeType.Element:
                     {
@@ -455,15 +463,15 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
                             InternalTrace(">" + _currentnode.Attributes[_attindex].Value);
 #endif
-                            return CurrentNode.Attributes?[_attindex].Value!;
+                            return _currentnode.Attributes?[_attindex].Value!;
                         }
 
-                        return CurrentNode.InnerText;
+                        return _currentnode.InnerText;
                     }
 
                 default:
                     throw new NotImplementedException("Internal error: Unhandled HtmlNodeType: " +
-                                                      CurrentNode?.NodeType);
+                                                      _currentnode?.NodeType);
             }
         }
     }
@@ -510,7 +518,7 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
             InternalTrace("localName=" + localName + ", namespaceURI=" + namespaceURI);
 #endif
-        HtmlAttribute? att = CurrentNode!.HasAttributes ? CurrentNode.Attributes?[localName] : null;
+        HtmlAttribute? att = _currentnode!.HasAttributes ? _currentnode.Attributes?[localName] : null;
         if (att is null)
         {
 #if TRACE_NAVIGATOR
@@ -557,7 +565,7 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
             InternalTrace(">" + (nav._currentnode == _currentnode));
 #endif
-        return nav.CurrentNode == CurrentNode;
+        return (nav._currentnode == _currentnode);
     }
 
     /// <summary>
@@ -581,9 +589,9 @@ public class HtmlNodeNavigator : XPathNavigator
                                         + ", a:" + nav._attindex);
 #endif
 
-        if (nav.CurrentDocument == CurrentDocument)
+        if (nav._doc == _doc)
         {
-            CurrentNode = nav.CurrentNode;
+            _currentnode = nav._currentnode;
             _attindex = nav._attindex;
 #if TRACE_NAVIGATOR
                 InternalTrace(">true");
@@ -609,7 +617,7 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
             InternalTrace("localName=" + localName + ", namespaceURI=" + namespaceURI);
 #endif
-        int index = CurrentNode!.Attributes!.GetAttributeIndex(localName);
+        int index = _currentnode!.Attributes!.GetAttributeIndex(localName);
         if (index == -1)
         {
 #if TRACE_NAVIGATOR
@@ -631,7 +639,7 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <returns>true if the navigator is successful moving to the first sibling node, false if there is no first sibling or if the navigator is currently positioned on an attribute node.</returns>
     public override bool MoveToFirst()
     {
-        if (CurrentNode?.ParentNode is null)
+        if (_currentnode?.ParentNode is null)
         {
 #if TRACE_NAVIGATOR
                 InternalTrace(">false");
@@ -639,7 +647,7 @@ public class HtmlNodeNavigator : XPathNavigator
             return false;
         }
 
-        if (CurrentNode.ParentNode.FirstChild is null)
+        if (_currentnode.ParentNode.FirstChild is null)
         {
 #if TRACE_NAVIGATOR
                 InternalTrace(">false");
@@ -647,7 +655,7 @@ public class HtmlNodeNavigator : XPathNavigator
             return false;
         }
 
-        CurrentNode = CurrentNode.ParentNode.FirstChild;
+        _currentnode = _currentnode.ParentNode.FirstChild;
 #if TRACE_NAVIGATOR
             InternalTrace(">true");
 #endif
@@ -681,7 +689,7 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <returns>true if there is a first child node, otherwise false.</returns>
     public override bool MoveToFirstChild()
     {
-        if (!CurrentNode!.HasChildNodes)
+        if (!_currentnode!.HasChildNodes)
         {
 #if TRACE_NAVIGATOR
                 InternalTrace(">false");
@@ -689,7 +697,7 @@ public class HtmlNodeNavigator : XPathNavigator
             return false;
         }
 
-        CurrentNode = CurrentNode.ChildNodes[0];
+        _currentnode = _currentnode.ChildNodes[0];
 #if TRACE_NAVIGATOR
             InternalTrace(">true");
 #endif
@@ -720,7 +728,7 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
             InternalTrace("id=" + id);
 #endif
-        HtmlNode? node = CurrentDocument.GetElementbyId(id);
+        HtmlNode? node = _doc.GetElementbyId(id);
         if (node is null)
         {
 #if TRACE_NAVIGATOR
@@ -729,7 +737,7 @@ public class HtmlNodeNavigator : XPathNavigator
             return false;
         }
 
-        CurrentNode = node;
+        _currentnode = node;
 #if TRACE_NAVIGATOR
             InternalTrace(">true");
 #endif
@@ -756,7 +764,7 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <returns>true if the navigator is successful moving to the next sibling node, false if there are no more siblings or if the navigator is currently positioned on an attribute node. If false, the position of the navigator is unchanged.</returns>
     public override bool MoveToNext()
     {
-        if (CurrentNode!.NextSibling is null)
+        if (_currentnode!.NextSibling is null)
         {
 #if TRACE_NAVIGATOR
                 InternalTrace(">false");
@@ -768,7 +776,7 @@ public class HtmlNodeNavigator : XPathNavigator
             InternalTrace("_c=" + _currentnode.CloneNode(false).OuterHtml);
             InternalTrace("_n=" + _currentnode.NextSibling.CloneNode(false).OuterHtml);
 #endif
-        CurrentNode = CurrentNode.NextSibling;
+        _currentnode = _currentnode.NextSibling;
 #if TRACE_NAVIGATOR
             InternalTrace(">true");
 #endif
@@ -784,7 +792,7 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
             InternalTrace(null);
 #endif
-        if (_attindex >= (CurrentNode?.Attributes?.Count - 1))
+        if (_attindex >= (_currentnode?.Attributes?.Count - 1))
         {
 #if TRACE_NAVIGATOR
                 InternalTrace(">false");
@@ -819,7 +827,7 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <returns>true if there is a parent node, otherwise false.</returns>
     public override bool MoveToParent()
     {
-        if (CurrentNode?.ParentNode is null)
+        if (_currentnode?.ParentNode is null)
         {
 #if TRACE_NAVIGATOR
                 InternalTrace(">false");
@@ -827,7 +835,7 @@ public class HtmlNodeNavigator : XPathNavigator
             return false;
         }
 
-        CurrentNode = CurrentNode.ParentNode;
+        _currentnode = _currentnode.ParentNode;
 #if TRACE_NAVIGATOR
             InternalTrace(">true");
 #endif
@@ -840,7 +848,7 @@ public class HtmlNodeNavigator : XPathNavigator
     /// <returns>true if the navigator is successful moving to the previous sibling node, false if there is no previous sibling or if the navigator is currently positioned on an attribute node.</returns>
     public override bool MoveToPrevious()
     {
-        if (CurrentNode?.PreviousSibling is null)
+        if (_currentnode?.PreviousSibling is null)
         {
 #if TRACE_NAVIGATOR
                 InternalTrace(">false");
@@ -848,7 +856,7 @@ public class HtmlNodeNavigator : XPathNavigator
             return false;
         }
 
-        CurrentNode = CurrentNode.PreviousSibling;
+        _currentnode = _currentnode.PreviousSibling;
 #if TRACE_NAVIGATOR
             InternalTrace(">true");
 #endif
@@ -860,7 +868,7 @@ public class HtmlNodeNavigator : XPathNavigator
     /// </summary>
     public override void MoveToRoot()
     {
-        CurrentNode = CurrentDocument.DocumentNode;
+        _currentnode = _doc.DocumentNode;
 #if TRACE_NAVIGATOR
             InternalTrace(null);
 #endif
@@ -924,7 +932,7 @@ public class HtmlNodeNavigator : XPathNavigator
 #if TRACE_NAVIGATOR
             InternalTrace(null);
 #endif
-        CurrentNode = CurrentDocument.DocumentNode;
+        _currentnode = _doc.DocumentNode;
         _attindex = -1;
     }
 

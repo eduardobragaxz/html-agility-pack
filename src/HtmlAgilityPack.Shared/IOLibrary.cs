@@ -16,17 +16,12 @@ internal struct IOLibrary
     internal static void CopyAlways(string? source, string target)
     {
         if (!File.Exists(source))
-        {
             return;
-        }
 
         string? directoryName = Path.GetDirectoryName(target);
 
         if (directoryName is not null)
-        {
-            _ = Directory.CreateDirectory(directoryName);
-        }
-
+            Directory.CreateDirectory(directoryName);
         MakeWritable(target);
         File.Copy(source, target, true);
     }
@@ -34,10 +29,7 @@ internal struct IOLibrary
     internal static void MakeWritable(string path)
     {
         if (!File.Exists(path))
-        {
             return;
-        }
-
         File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
     }
 #else

@@ -5,7 +5,9 @@
 // More projects: https://zzzprojects.com/
 // Copyright © ZZZ Projects Inc. All rights reserved.
 
+using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace HtmlAgilityPack;
 
@@ -20,6 +22,7 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
 {
     #region Fields
 
+    private readonly HtmlNode? _parentnode = parentnode;
     private readonly List<HtmlNode> _items = [];
 
     #endregion
@@ -30,7 +33,13 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     #region Properties
 
     /// <summary>Gets the parent node associated to the collection.</summary>
-    internal HtmlNode? ParentNode { get; } = parentnode;
+    internal HtmlNode? ParentNode
+    {
+        get
+        {
+            return _parentnode;
+        }
+    }
 
     /// <summary>
     /// Gets a given node from the list.
@@ -40,11 +49,11 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
         get
         {
             int index = GetNodeIndex(node);
-            return index == -1
-                ? throw new ArgumentOutOfRangeException(nameof(node),
+            if (index == -1)
+                throw new ArgumentOutOfRangeException(nameof(node),
                     "Node \"" + node.CloneNode(false)?.OuterHtml +
-                    "\" was not found in the collection")
-                : index;
+                    "\" was not found in the collection");
+            return index;
         }
     }
 
@@ -58,12 +67,8 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
         get
         {
             for (int i = 0; i < _items.Count; i++)
-            {
                 if (string.Equals(_items[i]?.Name, nodeName, StringComparison.OrdinalIgnoreCase))
-                {
                     return _items[i];
-                }
-            }
 
             return null;
         }
@@ -76,19 +81,26 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     /// <summary>
     /// Gets the number of elements actually contained in the list.
     /// </summary>
-    public int Count => _items.Count;
+    public int Count
+    {
+        get { return _items.Count; }
+    }
 
     /// <summary>
     /// Is collection read only
     /// </summary>
-    public bool IsReadOnly => false;
+    public bool IsReadOnly
+    {
+        get { return false; }
+    }
 
     /// <summary>
     /// Gets the node at the specified index.
     /// </summary>
     public HtmlNode this[int index]
     {
-        get => _items[index]; set => _items[index] = value;
+        get { return _items[index]; }
+        set { _items[index] = value; }
     }
 
     /// <summary>
@@ -111,7 +123,7 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
 
         if (setParent)
         {
-            _ = (node?.ParentNode = ParentNode);
+            node?.ParentNode = _parentnode;
         }
     }
 
@@ -122,9 +134,9 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     {
         foreach (HtmlNode? node in _items)
         {
-            _ = (node?.ParentNode = null);
-            _ = (node?.NextSibling = null);
-            _ = (node?.PreviousSibling = null);
+            node?.ParentNode = null;
+            node?.NextSibling = null;
+            node?.PreviousSibling = null;
         }
 
         _items.Clear();
@@ -198,37 +210,29 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
         HtmlNode? prev = null;
 
         if (index > 0)
-        {
             prev = _items[index - 1];
-        }
 
         if (index < _items.Count)
-        {
             next = _items[index];
-        }
 
         _items.Insert(index, node);
 
         if (prev is not null)
         {
             if (node == prev)
-            {
                 throw new InvalidProgramException("Unexpected error.");
-            }
 
             prev._nextnode = node;
         }
 
-        _ = (next?._prevnode = node);
+        next?._prevnode = node;
 
-        _ = (node?._prevnode = prev);
+        node?._prevnode = prev;
         if (next == node)
-        {
             throw new InvalidProgramException("Unexpected error.");
-        }
 
-        _ = (node?._nextnode = next);
-        node?.SetParent(ParentNode);
+        node?._nextnode = next;
+        node?.SetParent(_parentnode);
     }
 
     /// <summary>
@@ -254,35 +258,28 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
         HtmlNode oldnode = _items[index];
 
         // KEEP a reference since it will be set to null
-        HtmlNode? parentNode = ParentNode ?? oldnode?._parentnode;
+        var parentNode = _parentnode ?? oldnode?._parentnode;
 
         if (index > 0)
-        {
             prev = _items[index - 1];
-        }
 
         if (index < (_items.Count - 1))
-        {
             next = _items[index + 1];
-        }
 
         _items.RemoveAt(index);
 
         if (prev is not null)
         {
             if (next == prev)
-            {
                 throw new InvalidProgramException("Unexpected error.");
-            }
-
             prev._nextnode = next;
         }
 
-        _ = (next?._prevnode = prev);
+        next?._prevnode = prev;
 
-        _ = (oldnode?._prevnode = null);
-        _ = (oldnode?._nextnode = null);
-        _ = (oldnode?._parentnode = null);
+        oldnode?._prevnode = null;
+        oldnode?._nextnode = null;
+        oldnode?._parentnode = null;
 
         parentNode?.SetChanged();
     }
@@ -302,20 +299,11 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
         foreach (HtmlNode node in items)
         {
             if (node!.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-            {
                 return node;
-            }
-
-            if (!node.HasChildNodes)
-            {
-                continue;
-            }
-
+            if (!node.HasChildNodes) continue;
             HtmlNode? returnNode = FindFirst(node.ChildNodes, name);
             if (returnNode is not null)
-            {
                 return returnNode;
-            }
         }
 
         return null;
@@ -329,23 +317,15 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     {
         HtmlNode? last = null;
         if (_items.Count > 0)
-        {
             last = _items[^1];
-        }
 
         _items.Add(node);
         node._prevnode = last;
         node._nextnode = null;
-        node.SetParent(ParentNode);
-        if (last is null)
-        {
-            return;
-        }
-
+        node.SetParent(_parentnode);
+        if (last is null) return;
         if (last == node)
-        {
             throw new InvalidProgramException("Unexpected error.");
-        }
 
         last._nextnode = node;
     }
@@ -369,13 +349,8 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     {
         // TODO: should we rewrite this? what would be the key of a node?
         for (int i = 0; i < _items.Count; i++)
-        {
             if (node == _items[i])
-            {
                 return i;
-            }
-        }
-
         return -1;
     }
 
@@ -387,22 +362,17 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     {
         HtmlNode? first = null;
         if (_items.Count > 0)
-        {
             first = _items[0];
-        }
 
         _items.Insert(0, node);
 
         if (node == first)
-        {
             throw new InvalidProgramException("Unexpected error.");
-        }
-
         node._nextnode = first;
         node._prevnode = null;
-        node.SetParent(ParentNode);
+        node.SetParent(_parentnode);
 
-        _ = (first?._prevnode = node);
+        first?._prevnode = node;
     }
 
     /// <summary>
@@ -428,42 +398,33 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
         HtmlNode? oldnode = _items[index];
 
         if (index > 0)
-        {
             prev = _items[index - 1];
-        }
 
         if (index < (_items.Count - 1))
-        {
             next = _items[index + 1];
-        }
 
         _items[index] = node;
 
         if (prev is not null)
         {
             if (node == prev)
-            {
                 throw new InvalidProgramException("Unexpected error.");
-            }
-
             prev._nextnode = node;
         }
 
-        _ = (next?._prevnode = node);
+        next?._prevnode = node;
 
         node._prevnode = prev;
 
         if (next == node)
-        {
             throw new InvalidProgramException("Unexpected error.");
-        }
 
         node._nextnode = next;
-        node.SetParent(ParentNode);
+        node.SetParent(_parentnode);
 
-        _ = (oldnode?._prevnode = null);
-        _ = (oldnode?._nextnode = null);
-        _ = (oldnode?._parentnode = null);
+        oldnode?._prevnode = null;
+        oldnode?._nextnode = null;
+        oldnode?._parentnode = null;
     }
 
     #endregion
@@ -477,12 +438,8 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     public IEnumerable<HtmlNode> Descendants()
     {
         foreach (HtmlNode? item in _items)
-        {
             foreach (HtmlNode n in item?.Descendants()!)
-            {
                 yield return n;
-            }
-        }
     }
 
     /// <summary>
@@ -492,12 +449,8 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     public IEnumerable<HtmlNode> Descendants(string name)
     {
         foreach (HtmlNode? item in _items)
-        {
             foreach (HtmlNode n in item?.Descendants(name)!)
-            {
                 yield return n;
-            }
-        }
     }
 
     /// <summary>
@@ -507,12 +460,8 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     public IEnumerable<HtmlNode> Elements()
     {
         foreach (HtmlNode? item in _items)
-        {
             foreach (HtmlNode n in item?.ChildNodes!)
-            {
                 yield return n;
-            }
-        }
     }
 
     /// <summary>
@@ -523,12 +472,8 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     public IEnumerable<HtmlNode?> Elements(string name)
     {
         foreach (HtmlNode? item in _items)
-        {
             foreach (HtmlNode n in item?.Elements(name)!)
-            {
                 yield return n;
-            }
-        }
     }
 
     /// <summary>
@@ -538,12 +483,8 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     public IEnumerable<HtmlNode?> Nodes()
     {
         foreach (HtmlNode? item in _items)
-        {
             foreach (HtmlNode n in item?.ChildNodes!)
-            {
                 yield return n;
-            }
-        }
     }
 
     #endregion

@@ -46,9 +46,10 @@ internal class NameValuePairList
 
     internal List<KeyValuePair<string, string>> GetNameValuePairs(string name)
     {
-        return name is null
-            ? _allPairs
-            : _pairsWithName.TryGetValue(name, out List<KeyValuePair<string, string>>? value)
+        if (name is null)
+            return _allPairs;
+
+        return _pairsWithName.TryGetValue(name, out List<KeyValuePair<string, string>>? value)
             ? value
             : [];
     }
@@ -58,9 +59,7 @@ internal class NameValuePairList
         ArgumentNullException.ThrowIfNull(name);
         List<KeyValuePair<string, string>> al = GetNameValuePairs(name);
         if (al.Count == 0)
-        {
             return string.Empty;
-        }
 
         // return first item
         return al[0].Value.Trim();
@@ -75,24 +74,16 @@ internal class NameValuePairList
         _allPairs.Clear();
         _pairsWithName.Clear();
         if (text is null)
-        {
             return;
-        }
 
         string[] p = text.Split(';');
         foreach (string pv in p)
         {
             if (pv.Length == 0)
-            {
                 continue;
-            }
-
             string[] onep = pv.Split(separator, 2);
             if (onep.Length == 0)
-            {
                 continue;
-            }
-
             KeyValuePair<string, string> nvp = new(onep[0].Trim().ToLowerInvariant(),
                 onep.Length < 2 ? "" : onep[1]);
 

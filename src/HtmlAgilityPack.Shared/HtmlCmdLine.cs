@@ -5,6 +5,8 @@
 // More projects: https://zzzprojects.com/
 // Copyright © ZZZ Projects Inc. All rights reserved.
 
+using System;
+
 #if !NETSTANDARD1_3 && !METRO
 namespace HtmlAgilityPack;
 
@@ -50,14 +52,9 @@ internal class HtmlCmdLine
             if (GetStringArg(args[i], ref p))
             {
                 if (index == j)
-                {
                     return p;
-                }
                 else
-                {
                     p = def;
-                }
-
                 j++;
             }
         }
@@ -96,33 +93,19 @@ internal class HtmlCmdLine
     private static void GetBoolArg(string Arg, string Name, ref bool ArgValue)
     {
         if (Arg.Length < (Name.Length + 1)) // -name is 1 more than name
-        {
             return;
-        }
-
-        if (Arg[0] is not '/' and not '-') // not a param
-        {
+        if (('/' != Arg[0]) && ('-' != Arg[0])) // not a param
             return;
-        }
-
         if (Arg.Substring(1, Name.Length).Equals(Name, StringComparison.InvariantCultureIgnoreCase))
-        {
             ArgValue = true;
-        }
     }
 
     private static void GetIntArg(string Arg, string Name, ref int ArgValue)
     {
         if (Arg.Length < (Name.Length + 3)) // -name:12 is 3 more than name
-        {
             return;
-        }
-
-        if (Arg[0] is not '/' and not '-') // not a param
-        {
+        if (('/' != Arg[0]) && ('-' != Arg[0])) // not a param
             return;
-        }
-
         if (Arg.Substring(1, Name.Length).Equals(Name, StringComparison.InvariantCultureIgnoreCase))
         {
             try
@@ -137,11 +120,8 @@ internal class HtmlCmdLine
 
     private static bool GetStringArg(string Arg, ref string ArgValue)
     {
-        if (Arg[0] is '/' or '-')
-        {
+        if (('/' == Arg[0]) || ('-' == Arg[0]))
             return false;
-        }
-
         ArgValue = Arg;
         return true;
     }
@@ -149,19 +129,11 @@ internal class HtmlCmdLine
     private static void GetStringArg(string Arg, string Name, ref string ArgValue)
     {
         if (Arg.Length < (Name.Length + 3)) // -name:x is 3 more than name
-        {
             return;
-        }
-
-        if (Arg[0] is not '/' and not '-') // not a param
-        {
+        if (('/' != Arg[0]) && ('-' != Arg[0])) // not a param
             return;
-        }
-
         if (Arg.Substring(1, Name.Length).Equals(Name, StringComparison.InvariantCultureIgnoreCase))
-        {
             ArgValue = Arg.Substring(Name.Length + 2, Arg.Length - Name.Length - 2);
-        }
     }
 
     private static void ParseArgs()

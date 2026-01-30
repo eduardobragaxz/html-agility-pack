@@ -46,7 +46,12 @@ internal sealed class HtmlNameTable : XmlNameTable
     internal string GetOrAdd(string array)
     {
         string? s = Get(array);
-        return s is null ? Add(array) : s;
+        if (s is null)
+        {
+            return Add(array);
+        }
+
+        return s;
     }
 
     #endregion

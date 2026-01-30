@@ -83,13 +83,29 @@ public partial class HtmlNode
 
         ArgumentNullException.ThrowIfNull(targetType);
 
-        HtmlDocument source = htmlDocument is null ? OwnerDocument : htmlDocument;
+        HtmlDocument source;
+
+        if (htmlDocument is null)
+        {
+            source = OwnerDocument;
+        }
+        else
+        {
+            source = htmlDocument;
+        }
 
 
 
-        object? targetObject = targetType.IsInstantiable() == false
-            ? throw new MissingMethodException("Parameterless Constructor excpected for " + targetType.FullName)
-            : Activator.CreateInstance(targetType);
+        object? targetObject;
+
+        if (targetType.IsInstantiable() == false) // if it can not create instanse of T because of lack of constructor in type T.
+        {
+            throw new MissingMethodException("Parameterless Constructor excpected for " + targetType.FullName);
+        }
+        else
+        {
+            targetObject = Activator.CreateInstance(targetType);
+        }
 
         #endregion SettingPrerequisite
 
@@ -293,7 +309,7 @@ public partial class HtmlNode
                                         object? o = GetEncapsulatedData(T_Types[0], innerHtmlDocument);
 #pragma warning restore IL2072 // Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
 
-                                        _ = (result?.Add(o));
+                                        result?.Add(o);
                                     }
                                 }
                                 #endregion Property_Is_IEnumerable<HasXPath-UserDefinedClass>
@@ -341,7 +357,7 @@ public partial class HtmlNode
                                             }
 
 
-                                            _ = (result?.Add(resultCastedToTargetPropertyType));
+                                            result?.Add(resultCastedToTargetPropertyType);
                                         }
                                     }
                                 }
@@ -405,7 +421,14 @@ internal static class Tools
         ArgumentNullException.ThrowIfNull(attributeType);
 
 #if !(NETSTANDARD1_3 || NETSTANDARD1_6)
-        return type.IsDefined(attributeType, false) == true;
+        if (type.IsDefined(attributeType, false) == true)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
 #endif
 
 
@@ -519,7 +542,7 @@ internal static class Tools
     {
         ArgumentNullException.ThrowIfNull(type);
 
-        if (methodName is null or "")
+        if (methodName is null || methodName == "")
         {
             throw new ArgumentNullException(nameof(methodName));
         }
@@ -596,7 +619,7 @@ internal static class Tools
 #pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         foreach (HtmlNode? node in htmlNodeCollection)
         {
-            _ = (result?.Add(Convert.ChangeType(GetHtmlForEncapsulation(node, xPathAttribute.NodeReturnType), listGenericType)));
+            result?.Add(Convert.ChangeType(GetHtmlForEncapsulation(node, xPathAttribute.NodeReturnType), listGenericType));
         }
         return result;
     }
@@ -644,7 +667,14 @@ internal static class Tools
 #if !(NETSTANDARD1_3 || NETSTANDARD1_6)
         // checking for having parameterless constructor.
 #pragma warning disable IL2070 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations.
-        return type.GetConstructor(Type.EmptyTypes) is not null;
+        if (type.GetConstructor(Type.EmptyTypes) is null)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
 #pragma warning restore IL2070 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations.
 #endif
 

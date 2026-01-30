@@ -18,6 +18,7 @@ public class Crc32
 {
     #region Fields
 
+    private uint _crc32;
 
     #endregion
 
@@ -74,7 +75,11 @@ public class Crc32
 
     #region Properties
 
-    internal uint CheckSum { get; set; }
+    internal uint CheckSum
+    {
+        get { return _crc32; }
+        set { _crc32 = value; }
+    }
 
     #endregion
 
@@ -144,9 +149,9 @@ public class Crc32
         byte lowByte, hiByte;
         lowByte = (byte)(c & 0x00ff);
         hiByte = (byte)(c >> 8);
-        CheckSum = UPDC32(hiByte, CheckSum);
-        CheckSum = UPDC32(lowByte, CheckSum);
-        return ~CheckSum;
+        _crc32 = UPDC32(hiByte, _crc32);
+        _crc32 = UPDC32(lowByte, _crc32);
+        return ~_crc32;
     }
 
     #endregion
@@ -155,7 +160,7 @@ public class Crc32
 
     private static uint UPDC32(byte octet, uint crc)
     {
-        return crc_32_tab[((crc) ^ (octet)) & 0xff] ^ ((crc) >> 8);
+        return (crc_32_tab[((crc) ^ (octet)) & 0xff] ^ ((crc) >> 8));
     }
 
     #endregion
