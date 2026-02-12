@@ -252,18 +252,7 @@ public partial class HtmlNode
     /// <summary>
     /// Gets a value indicating whether the current node has any attributes on the closing tag.
     /// </summary>
-    public bool HasClosingAttributes
-    {
-        get
-        {
-            if ((_endnode is null) || (_endnode == this))
-            {
-                return false;
-            }
-
-            return _endnode._attributes is not null && _endnode._attributes.Count > 0;
-        }
-    }
+    public bool HasClosingAttributes => _endnode is not null && _endnode != this && _endnode._attributes is not null && _endnode._attributes.Count > 0;
 
     /// <summary>
     /// Gets or sets the value of the 'id' HTML attribute. The document must have been parsed using the OptionUseIdAttribute set to true.
@@ -772,7 +761,7 @@ public partial class HtmlNode
         }
 
         // <?xml ...
-        return '?' == name[0] || ElementsFlags.TryGetValue(name, out HtmlElementFlag flag) && (flag & HtmlElementFlag.Empty) != 0;
+        return '?' == name[0] || (ElementsFlags.TryGetValue(name, out HtmlElementFlag flag) && (flag & HtmlElementFlag.Empty) != 0);
     }
 
     /// <summary>
@@ -1268,7 +1257,7 @@ public partial class HtmlNode
     {
         List<HtmlAttribute?> list = [];
 
-        foreach (var name in attributeNames)
+        foreach (string name in attributeNames)
         {
             list.Add(Attributes?[name]);
         }
@@ -1441,12 +1430,9 @@ public partial class HtmlNode
         }
 
         HtmlAttribute? att = Attributes?[name];
-        if (att?.Value is null)
-        {
-            return def;
-        }
-
-        return att.Value is T value ? value : parser is not null && parser(att.Value, out T parsedValue) ? parsedValue : def;
+        return att?.Value is null
+            ? def
+            : att.Value is T value ? value : parser is not null && parser(att.Value, out T parsedValue) ? parsedValue : def;
     }
 #endif
 
@@ -2295,7 +2281,7 @@ public partial class HtmlNode
             quoteType = att.QuoteType == AttributeValueQuote.WithoutValue ? AttributeValueQuote.DoubleQuote : att.QuoteType;
         }
 
-        var isWithoutValue = quoteType == AttributeValueQuote.WithoutValue;
+        bool isWithoutValue = quoteType == AttributeValueQuote.WithoutValue;
 
         string? name;
         string quote = quoteType == AttributeValueQuote.DoubleQuote ? "\"" : quoteType == AttributeValueQuote.SingleQuote ? "'" : "";
@@ -2354,7 +2340,7 @@ public partial class HtmlNode
 
             if (!isWithoutValue)
             {
-                var value = quoteType == AttributeValueQuote.DoubleQuote ? !att.Value.StartsWith('@') ? att.Value.Replace("\"", "&quot;") :
+                string value = quoteType == AttributeValueQuote.DoubleQuote ? !att.Value.StartsWith('@') ? att.Value.Replace("\"", "&quot;") :
                 att.Value : quoteType == AttributeValueQuote.SingleQuote ? att.Value.Replace("'", "&#39;") : att.Value;
                 if (_ownerdocument.OptionOutputOptimizeAttributeValues)
                 {
@@ -2535,7 +2521,7 @@ public partial class HtmlNode
     public void AddClass(string name, bool throwError)
     {
         IEnumerable<HtmlAttribute>? classAttributes = Attributes?.AttributesWithName("class");
-        var isEmpty = true;
+        bool isEmpty = true;
 
         foreach (HtmlAttribute att in classAttributes!)
         {
@@ -2721,7 +2707,7 @@ public partial class HtmlNode
         {
             string[]? classNames = att.Value?.Split(null as char[], StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var className in classNames!)
+            foreach (string className in classNames!)
             {
                 yield return className;
             }
@@ -2735,10 +2721,10 @@ public partial class HtmlNode
     {
         IEnumerable<string> classes = GetClasses();
 
-        foreach (var @class in classes)
+        foreach (string @class in classes)
         {
-            var classNames = @class.Split(null as char[], StringSplitOptions.RemoveEmptyEntries);
-            foreach (var theClassName in classNames)
+            string[] classNames = @class.Split(null as char[], StringSplitOptions.RemoveEmptyEntries);
+            foreach (string theClassName in classNames)
             {
                 if (theClassName == className)
                 {
@@ -2752,7 +2738,7 @@ public partial class HtmlNode
 
     private static bool IsEmpty(IEnumerable? en)
     {
-        foreach (var _ in en!)
+        foreach (object? _ in en!)
         {
             return false;
         }

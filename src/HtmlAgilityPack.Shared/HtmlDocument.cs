@@ -1052,12 +1052,7 @@ public partial class HtmlDocument
     private HtmlNode? FindResetterNode(HtmlNode node, string name)
     {
         HtmlNode? resetter = Utilities.GetDictionaryValueOrDefault(Lastnodes, name);
-        if (resetter is null)
-        {
-            return null;
-        }
-
-        return resetter.Closed ? null : resetter._streamposition < node._streamposition ? null : resetter;
+        return resetter is null ? null : resetter.Closed ? null : resetter._streamposition < node._streamposition ? null : resetter;
     }
 
     private bool FindResetterNodes(HtmlNode node, string[]? names)

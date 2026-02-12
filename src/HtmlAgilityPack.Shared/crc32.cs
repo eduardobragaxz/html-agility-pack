@@ -155,7 +155,7 @@ public class Crc32
 
     private static uint UPDC32(byte octet, uint crc)
     {
-        return crc_32_tab[((crc) ^ (octet)) & 0xff] ^ ((crc) >> 8);
+        return crc_32_tab[(crc ^ octet) & 0xff] ^ (crc >> 8);
     }
 
     #endregion

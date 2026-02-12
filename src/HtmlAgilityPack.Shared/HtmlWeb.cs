@@ -799,7 +799,7 @@ public partial class HtmlWeb
     /// </summary>
     public int Timeout
     {
-        get; set => field = value is <= 0 and not (-1) ? throw new ArgumentOutOfRangeException("Timeout") : value;
+        get; set => field = value is <= 0 and not -1 ? throw new ArgumentOutOfRangeException("Timeout") : value;
     } = 100000;
 
     /// <summary>
