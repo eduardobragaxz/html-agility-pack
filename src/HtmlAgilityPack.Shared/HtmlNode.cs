@@ -214,7 +214,7 @@ public partial class HtmlNode
     /// </summary>
     public HtmlNodeCollection ChildNodes
     {
-        get => _childnodes ??= new HtmlNodeCollection(this); internal set => _childnodes = value;
+        get => _childnodes ??= new HtmlNodeCollection() { ParentNode = this }; internal set => _childnodes = value;
     }
 
     /// <summary>

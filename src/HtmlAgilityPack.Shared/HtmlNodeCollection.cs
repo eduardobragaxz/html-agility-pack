@@ -15,8 +15,7 @@ namespace HtmlAgilityPack;
 /// <remarks>
 /// Initialize the HtmlNodeCollection with the base parent node
 /// </remarks>
-/// <param name="parentnode">The base node of the collection</param>
-public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
+public class HtmlNodeCollection : IList<HtmlNode>
 {
     #region Fields
 
@@ -30,7 +29,7 @@ public class HtmlNodeCollection(HtmlNode parentnode) : IList<HtmlNode>
     #region Properties
 
     /// <summary>Gets the parent node associated to the collection.</summary>
-    internal HtmlNode? ParentNode { get; } = parentnode;
+    internal HtmlNode? ParentNode { get; init; }
 
     /// <summary>
     /// Gets a given node from the list.

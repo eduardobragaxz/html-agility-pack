@@ -38,14 +38,19 @@ public partial class HtmlNode : IXPathNavigable
     /// <returns>An <see cref="HtmlNodeCollection"/> containing a collection of nodes matching the <see cref="XPath"/> query, or <c>null</c> if no node matched the XPath expression.</returns>
     public HtmlNodeCollection? SelectNodes(string xpath)
     {
-        HtmlNodeCollection list = new(null);
+        HtmlNodeCollection? list = [];
 
         HtmlNodeNavigator nav = new(OwnerDocument, this);
         XPathNodeIterator it = nav.Select(xpath);
+
         while (it.MoveNext())
         {
             HtmlNodeNavigator? n = (HtmlNodeNavigator?)it.Current;
-            list.Add(n?.CurrentNode, false);
+
+            if (n is not null && n.CurrentNode is not null)
+            {
+                list.Add(n.CurrentNode, false);
+            }
         }
 
         return list.Count == 0 && !OwnerDocument.OptionEmptyCollection ? null : list;
@@ -58,14 +63,18 @@ public partial class HtmlNode : IXPathNavigable
     /// <returns>An <see cref="HtmlNodeCollection"/> containing a collection of nodes matching the <see cref="XPath"/> query, or <c>null</c> if no node matched the XPath expression.</returns>
     public HtmlNodeCollection? SelectNodes(XPathExpression xpath)
     {
-        HtmlNodeCollection list = new(null);
+        HtmlNodeCollection list = [];
 
         HtmlNodeNavigator nav = new(OwnerDocument, this);
         XPathNodeIterator it = nav.Select(xpath);
         while (it.MoveNext())
         {
             HtmlNodeNavigator? n = (HtmlNodeNavigator?)it.Current;
-            list.Add(n?.CurrentNode, false);
+
+            if (n is not null && n.CurrentNode is not null)
+            {
+                list.Add(n.CurrentNode, false);
+            }
         }
 
         return list.Count == 0 && !OwnerDocument.OptionEmptyCollection ? null : list;
