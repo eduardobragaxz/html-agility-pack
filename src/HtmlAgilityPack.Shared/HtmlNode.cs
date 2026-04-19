@@ -455,9 +455,9 @@ public partial class HtmlNode
             return;
         }
 
-        foreach (HtmlNode? node in ChildNodes)
+        foreach (HtmlNode node in ChildNodes)
         {
-            _ = sb.Append(node?.GetCurrentNodeText());
+            _ = sb.Append(node.GetCurrentNodeText());
         }
         return;
     }
@@ -474,9 +474,9 @@ public partial class HtmlNode
             return;
         }
 
-        foreach (HtmlNode? node in ChildNodes)
+        foreach (HtmlNode node in ChildNodes)
         {
-            node?.AppendInnerText(sb, isShowHideInnerText);
+            node.AppendInnerText(sb, isShowHideInnerText);
         }
     }
 
