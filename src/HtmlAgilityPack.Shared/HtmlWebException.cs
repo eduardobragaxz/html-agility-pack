@@ -14,7 +14,7 @@ namespace HtmlAgilityPack;
 /// Creates an instance of the HtmlWebException.
 /// </remarks>
 /// <param name="message">The exception's message.</param>
-public class HtmlWebException(string message) : Exception(message)
+public sealed class HtmlWebException(string message) : Exception(message)
 {
 
     #region Constructors

@@ -10,7 +10,7 @@ namespace HtmlAgilityPack;
 /// <summary>
 /// Represents an HTML text node.
 /// </summary>
-public class HtmlTextNode : HtmlNode
+public sealed class HtmlTextNode : HtmlNode
 {
     #region Fields
 

@@ -15,7 +15,7 @@ namespace HtmlAgilityPack;
 /// <remarks>
 /// Initialize the HtmlNodeCollection with the base parent node
 /// </remarks>
-public class HtmlNodeCollection : IList<HtmlNode>
+public sealed class HtmlNodeCollection : IList<HtmlNode>
 {
     #region Fields
 

@@ -14,7 +14,7 @@ namespace HtmlAgilityPack;
 /// <summary>
 /// Represents a list of mixed code fragments.
 /// </summary>
-public class MixedCodeDocumentFragmentList : IEnumerable
+public sealed class MixedCodeDocumentFragmentList : IEnumerable
 {
     #region Fields
 

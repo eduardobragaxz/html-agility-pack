@@ -17,7 +17,7 @@ namespace HtmlAgilityPack;
 /// <summary>
 /// Represents an HTML navigator on an HTML document seen as a data store.
 /// </summary>
-public class HtmlNodeNavigator : XPathNavigator
+public sealed class HtmlNodeNavigator : XPathNavigator
 {
     #region Fields
 

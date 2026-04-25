@@ -12,7 +12,7 @@ namespace HtmlAgilityPack;
 /// <summary>
 /// Represents a combined list and collection of HTML nodes.
 /// </summary>
-public class HtmlAttributeCollection : IList<HtmlAttribute>
+public sealed class HtmlAttributeCollection : IList<HtmlAttribute>
 {
     #region Fields
 

@@ -16,7 +16,7 @@ namespace HtmlAgilityPack;
 /// Follows Additional specification found at https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
 /// See also: https://html.spec.whatwg.org/multipage/named-characters.html#named-character-references
 /// </summary>
-public class HtmlEntity
+public sealed class HtmlEntity
 {
     #region Static Members
 

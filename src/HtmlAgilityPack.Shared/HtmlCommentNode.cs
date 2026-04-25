@@ -10,7 +10,7 @@ namespace HtmlAgilityPack;
 /// <summary>
 /// Represents an HTML comment.
 /// </summary>
-public class HtmlCommentNode : HtmlNode
+public sealed class HtmlCommentNode : HtmlNode
 {
     #region Fields
 

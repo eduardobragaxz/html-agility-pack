@@ -11,7 +11,7 @@ namespace HtmlAgilityPack;
 /// <summary>
 /// Represents a fragment of text in a mixed code document.
 /// </summary>
-public class MixedCodeDocumentTextFragment : MixedCodeDocumentFragment
+public sealed class MixedCodeDocumentTextFragment : MixedCodeDocumentFragment
 {
     #region Constructors
 

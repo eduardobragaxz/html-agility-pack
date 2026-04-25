@@ -14,7 +14,7 @@ namespace HtmlAgilityPack;
 /// <summary>
 /// Represents a complete HTML document.
 /// </summary>
-public partial class HtmlDocument
+public sealed partial class HtmlDocument
 {
     #region Manager
 

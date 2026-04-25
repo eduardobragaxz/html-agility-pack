@@ -11,7 +11,7 @@ using System.Xml.XPath;
 
 namespace HtmlAgilityPack;
 
-public partial class HtmlDocument : IXPathNavigable
+public sealed partial class HtmlDocument : IXPathNavigable
 {
     /// <summary>
     /// Creates a new XPathNavigator object for navigating this HTML document.

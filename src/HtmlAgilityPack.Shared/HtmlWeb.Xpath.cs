@@ -13,7 +13,7 @@ using System.Xml.Xsl;
 
 namespace HtmlAgilityPack;
 
-public partial class HtmlWeb
+public sealed partial class HtmlWeb
 {
     /// <summary>
     /// Creates an instance of the given type from the specified Internet resource.

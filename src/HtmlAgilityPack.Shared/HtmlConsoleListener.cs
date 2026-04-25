@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace HtmlAgilityPack;
 
-internal class HtmlConsoleListener : TraceListener
+internal sealed class HtmlConsoleListener : TraceListener
 {
     #region Public Methods
 

@@ -39,7 +39,7 @@ namespace HtmlAgilityPack;
 /// <summary>
 /// A utility class to get HTML document from HTTP.
 /// </summary>
-public partial class HtmlWeb
+public sealed partial class HtmlWeb
 {
     #region Delegates
 

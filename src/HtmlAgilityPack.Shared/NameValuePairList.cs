@@ -7,7 +7,7 @@
 
 namespace HtmlAgilityPack;
 
-internal class NameValuePairList
+internal sealed class NameValuePairList
 {
     #region Fields
 

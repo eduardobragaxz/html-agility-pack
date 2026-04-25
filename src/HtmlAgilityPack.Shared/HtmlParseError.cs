@@ -10,7 +10,7 @@ namespace HtmlAgilityPack
     /// <summary>
     /// Represents a parsing error found during document parsing.
     /// </summary>
-    public class HtmlParseError
+    public sealed class HtmlParseError
     {
         #region Fields
 

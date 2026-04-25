@@ -7,7 +7,7 @@
 
 namespace HtmlAgilityPack;
 
-internal partial class Trace
+internal sealed partial class Trace
 {
     partial void WriteLineIntern(string message, string category)
     {

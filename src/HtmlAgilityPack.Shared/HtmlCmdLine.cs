@@ -8,7 +8,7 @@
 #if !NETSTANDARD1_3 && !METRO
 namespace HtmlAgilityPack;
 
-internal class HtmlCmdLine
+internal sealed class HtmlCmdLine
 {
     #region Static Members
 

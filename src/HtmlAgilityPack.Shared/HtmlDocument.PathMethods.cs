@@ -11,7 +11,7 @@ using System.Text;
 
 namespace HtmlAgilityPack;
 
-public partial class HtmlDocument
+public sealed partial class HtmlDocument
 {
     /// <summary>
     /// Detects the encoding of an HTML document from a file first, and then loads the file.

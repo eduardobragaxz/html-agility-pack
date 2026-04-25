@@ -19,7 +19,7 @@ namespace HtmlAgilityPack
     /// Represents an HTML attribute.
     /// </summary>
     [DebuggerDisplay("Name: {OriginalName}, Value: {Value}")]
-    public class HtmlAttribute : IComparable
+    public sealed class HtmlAttribute : IComparable
     {
         #region Fields
 

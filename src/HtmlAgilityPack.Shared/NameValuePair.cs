@@ -8,7 +8,7 @@
 #if METRO
 namespace HtmlAgilityPack;
 
-internal class NameValuePair
+internal sealed class NameValuePair
 {
 #region Fields
 
