@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AssemblyName>HtmlAgilityPack</AssemblyName>
+		<RootNamespace>HtmlAgilityPack</RootNamespace>
+		<PackageId>HtmlAgilityPack</PackageId>
+		<Version>1.12.4</Version>
+		<Authors>ZZZ Projects Inc.</Authors>
+		<Company>ZZZ Projects Inc.</Company>
+		<Product>Html Agility Pack</Product>
+		<Copyright>Copyright © ZZZ Projects Inc.</Copyright>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>HtmlAgilityPack.snk</AssemblyOriginatorKeyFile>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<IsAotCompatible>true</IsAotCompatible>
+	</PropertyGroup>
+
+	<Import Project="..\HtmlAgilityPack.Shared\HtmlAgilityPack.Shared.projitems" Label="Shared" />
+
+</Project>
